@@ -481,7 +481,6 @@ Tipo de Medidas Estadisticas :
         ** Distancias: A partir de un punto de referencia, usualmente es la media
            *** Si tu referencia es la media : Varianza , Desviacion estandar.
            *** Si tu referencia es la mediana : MAD (desviacion absoluto de la mediana). Es una medida robusta, porque no es sensible a los outlier.
-        Norma L1 : Valor absoluto
       * Relativas :
           ** CV : Coeficiente de Variabilidad
  
@@ -496,8 +495,11 @@ Medida Central: Una medida de representar a la distribucion
  
  ** La media se ve afectada cuando hay datos extremos
  ** La mediana es mejor para el grafico anterior porque hay valores extremos
-    
- --------------
+
+Para medir la distancia se usan:Norma L1 : Valor absoluto
+
+
+---------------
  
  Me da informacion para comparar 
  
