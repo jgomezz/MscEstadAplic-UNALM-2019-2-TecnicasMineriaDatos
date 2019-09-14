@@ -1,0 +1,5 @@
+"0","# Usando ggplot2"
+"0","ggplot(data = DMark, aes(x = Monto),fill = Monto) +"
+"0","  geom_density(color=""darkblue"", fill=""lightblue"") +"
+"0","  geom_rug() +"
+"0","  theme_bw()"

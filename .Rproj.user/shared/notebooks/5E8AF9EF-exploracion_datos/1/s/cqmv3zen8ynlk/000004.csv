@@ -1,0 +1,3 @@
+"0","points(x =as.numeric(row.names(pi)),"
+"0","       y =as.numeric(pi),"
+"0","       pch=19,cex=1.5)"

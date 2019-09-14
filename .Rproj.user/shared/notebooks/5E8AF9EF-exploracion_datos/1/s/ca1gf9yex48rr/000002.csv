@@ -1,0 +1,2 @@
+"0","library(agricolae)"
+"0","(table.freq(hist(DMark$Monto,breaks = ""Sturges"",plot=FALSE))) #Regla Sturges"

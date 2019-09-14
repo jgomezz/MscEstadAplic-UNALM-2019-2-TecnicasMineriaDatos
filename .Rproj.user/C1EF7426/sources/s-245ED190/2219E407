@@ -7,14 +7,14 @@
     "folds" : "",
     "hash" : "0",
     "id" : "2219E407",
-    "lastKnownWriteTime" : 1568494205,
-    "last_content_update" : 1568494205174,
+    "lastKnownWriteTime" : 1568498424,
+    "last_content_update" : 1568498424839,
     "path" : "~/personal/master/MscEstadAplic-UNALM-2019-2-TecnicasMineriaDatos/semana-01/exploracion_datos.Rmd",
     "project_path" : "semana-01/exploracion_datos.Rmd",
     "properties" : {
         "chunk_output_type" : "inline",
-        "cursorPosition" : "241,0",
-        "scrollLine" : "240",
+        "cursorPosition" : "21,0",
+        "scrollLine" : "21",
         "tempName" : "Untitled1"
     },
     "read_only" : false,

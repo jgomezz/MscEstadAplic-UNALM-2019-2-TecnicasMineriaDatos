@@ -1,0 +1,6 @@
+"0","# Visualizaci?n de la Distribuci?n de la Variable"
+"0","# ------------------------------------------------"
+"0","# Histograma y pol?gono de frecuencia"
+"0","h1<-hist(DMark$Monto,breaks = ""Sturges"","
+"0","         xlab=""Monto"","
+"0","         ylab=""N?mero de clientes"")"

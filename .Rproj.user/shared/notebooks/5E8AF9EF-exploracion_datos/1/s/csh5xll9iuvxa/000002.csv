@@ -1,0 +1,4 @@
+"0","# Usando ggplot2"
+"0","ggplot(data = DMark, aes(y = Monto)) +"
+"0","  geom_boxplot(fill=""lightblue"")+"
+"0","  theme_bw()"

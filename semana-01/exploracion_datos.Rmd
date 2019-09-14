@@ -19,6 +19,9 @@ head(DMark)
 ```{r}
 str(DMark)
 ```
+
+# I.- ORGANIZAR Y VISUALIZAR
+
 Hay 10 variables porque hay 10 atributos que se estan estudiando
 Varias de los atributos son de tipo ordinal, en este caso en R les asigna como Factor. No necesariamente es el orden que esperamos, de modo que en la forma descriptiva no se aprecia, se muestra una forma, no es necesariamente la mas optima
 ```{r}
@@ -240,3 +243,210 @@ mosaicplot(~ Edad+Historial, data = DMark, color = 2:4,
 ```
 En esta grafica se aprecia mejor la proporcion de personas en edad de Jovenes, Media y Adulta
 
+-------------------------------------------------------
+Graficos de variables cuantitativos discretas y continuos
+
+# Se quiere presentar la grafica para frecuecia para el numero de hijos 
+
+El grafico de frecuencias para una variable discreta y continua es la misma
+
+##___________________________________________________________________________________
+## Ejercicio: Analice si existe asociaci?n entre el historial de compra y el g?nero
+##___________________________________________________________________________________
+
+```{r}
+#------------------------------------------------------------------#
+#  d) Representaci?n de Datos Cuantitativos Discretos              #
+#------------------------------------------------------------------#
+# Tabla de Frecuencias
+ni<-table(DMark$Hijos)
+fi<-prop.table(table(DMark$Hijos))
+pi<-prop.table(table(DMark$Hijos))*100
+hijos.tabla<-t(rbind(ni,fi,pi))
+hijos.tabla
+```
+Lo mas frecuente es que los clientes no tengan hijos, inclusive hasta con 1 hijo . No es comun en nuestros clientes que tengan hijos
+
+Como es una variable discreta se debe usar una grafica de Varas. Conceptualmente NO ES RECOMENDABLE una grafica de BARRAS.
+
+```{r}
+# Visualizaci?n de la Distribuci?n de la Variable
+# ------------------------------------------------
+#Gr?fico de Varas
+plot(pi, type="h", lwd=2,
+     xlab="N?mero de hijos",
+     ylab="Porcentaje de clientes",
+     main="Distribuci?n del n?mero de hijos por cliente")
+points(x =as.numeric(row.names(pi)),
+       y =as.numeric(pi),
+       pch=19,cex=1.5)
+```
+Para diferenciar las frecuencias se pone un punto al final. Lo mas frecuente es tener clientes sin hijos
+
+```{r}
+#Usando ggplot2
+df <- as.data.frame(pi)
+ggplot(df, aes(x=Var1, y=Freq)) +
+  geom_segment( aes(x=Var1, xend=Var1, y=0, yend=Freq)) +
+  geom_point( size=5, color="red", fill=alpha("orange", 0.3), alpha=0.7, shape=21, stroke=2) +
+  labs(x = "# de hijos", y = "% de clientes", title = "Distribuci?n del n?mero de hijos por cliente") 
+
+```
+Se busca el patron, no los valores. 
+-------------------
+
+Con una variable cuantitativa continua
+
+Un motivo empirico, la razon es resumir la tabla
+Por un tema conceptual, porque son variables continuas, por eso se coloca en intervalos
+
+----
+La cantidad de intervalos, el tamaño de cada intervalos, y como tomo los limites
+
+Se usa la regla de Sturges, pero no es eficiente, pero es simple.
+
+En la regla de Sturges no considera la variabilidad de los datos. 
+
+Cuando tienes valores extremos no es recomendable la regla de Sturges.
+
+Cuando se aplica Sturges con valores extremos, se tendra intervalos sin valores
+---
+
+```{r}
+#------------------------------------------------------------------#
+#  e) Representaci?n de Datos Cuantitativos Continuos              #
+#------------------------------------------------------------------#
+
+# Tabla de Frecuencias (usando la regla de Sturges)
+factorx <- factor(cut(DMark$Monto, breaks=nclass.Sturges(DMark$Monto),right=TRUE)) # Se describe la variable monto
+xout <- as.data.frame(table(factorx))
+colnames(xout)<-c("Monto","ni")
+xout <- transform(xout, 
+                  fi=prop.table(ni),
+                  pi=prop.table(ni)*100,
+                  Ni = cumsum(ni),
+                  Fi = cumsum(prop.table(ni)),
+                  Pi = cumsum(prop.table(ni))*100
+)
+xout
+```
+Explicacion :
+
+El volumene de compra son relativamente bajos. mayormente compran hasta intevarlos de 1160 dolares
+
+----------------------
+
+Profesor Felipe Mendiburo. libreria bricolae
+
+# Obtener la tabla de una librer?a
+
+```{r}
+library(agricolae)
+(table.freq(hist(DMark$Monto,breaks = "Sturges",plot=FALSE))) #Regla Sturges
+```
+
+La mitad de los clientes tienen hasta 1000 dolares
+
+
+```{r}
+(table.freq(graph.freq(DMark$Monto,plot=FALSE)))   #Regla Sturges (Agricolae)
+```
+
+Se pueden usar los histogramas, poligonos y graficas de densidad
+
+Las 3 graficas me permiten ver la funcion de densidad
+
+La ojiva sirve para mostrar la fucion acumulativa.
+
+
+Cuando tienes variables, diagrama de cajas es para identificar los outlier , ver los quartiles ( es decir para ver dispersion). La medianda me sirve para ver alguna posible asimetria.
+
+
+# Mostrar el histograma
+
+```{r}
+# Visualizaci?n de la Distribuci?n de la Variable
+# ------------------------------------------------
+# Histograma y pol?gono de frecuencia
+h1<-hist(DMark$Monto,breaks = "Sturges",
+         xlab="Monto",
+         ylab="N?mero de clientes")
+```
+La forma de la distribucion de las frecuencias de los clientes tiene una asiemtrica positiva.Hay algunos clientes que tienen gastos inusualmente elevados comparados con el resto
+
+
+Un modelo estadistico se caracteriza porque tiene un modelo probabilistico
+
+En el modelo de regresion lineal, las distribucion del histograma deberia ser normal.
+
+1ra .alternativa
+Modelos que no usan variables parametricas:
+Arbol de regresion
+Pero no puedo inferir
+
+2da. alternativa
+Transformar las variables
+
+3ra. Usar un modelo lineal generalizado
+Se puede usar una distribucion gamma o normal inversa
+No se puede usar poisson porque se usa para variables discretas
+
+
+El poligono se construye con las marcas de clases
+
+```{r}
+# Histograma y pol?gono de frecuencia
+h1<-hist(DMark$Monto,breaks = "Sturges",
+         xlab="Monto",
+         ylab="N?mero de clientes")
+polygon.freq(h1,frequency=1,col="red")
+```
+
+```{r}
+# Pol?gono de Frecuencias (solo)
+h1<-hist(DMark$Monto,border=FALSE)
+polygon.freq(h1,frequency=1,col="red")
+
+```
+
+
+
+Las graficas de densidad se debe controlar el Bandwith , porque se puede ir en extremo 
+
+```{r}
+# Usando ggplot2
+ggplot(data = DMark, aes(x = Monto),fill = Monto) +
+  geom_density(color="darkblue", fill="lightblue") +
+  geom_rug() + # Esto hace que se muestra las dispersion de los datos
+  theme_bw()
+```
+Cuando tengo valor muy negro se observa que los datos estan muy juntos, en cambio se observa que cuando hay pocos datos sale el color blanco.
+
+```{r}
+
+#Boxplots
+boxplot(DMark$Monto)
+```
+```{r}
+# Usando ggplot2
+ggplot(data = DMark, aes(y = Monto)) +
+  geom_boxplot(fill="lightblue")+
+  theme_bw()
+```
+
+# II .- RESUMIR 
+
+No todos los estadisticos son estimadores
+
+Si me parametros es la media poblaciones, uso la media muestral
+
+En el caso de intervalo de confianza : El limite inferior y superior son estadisticos, es un estadistico porque se obtiene desde la muestra aleatoria
+
+Si el modelo parametrico, existe una cantidad finita de parametros. 
+Si tengo una modelo normal ( distribucion normal ), solo necesito 2 parametros : media y varianza
+
+La media es un parametro de tendencia central , y traslada de un lado a otro
+La varianza . hace que la distribucion tenga mayor o menor dispersion.
+
+A mayor varianza la densidad es mas amplia, se tiene mayor incertidumbre
+Si construyes modelos con varianza de mayor valor se genera  
