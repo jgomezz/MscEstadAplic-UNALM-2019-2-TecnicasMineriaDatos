@@ -1,0 +1,2 @@
+"0","legend(""topright"",legend=levels(DMark$Historial),col=2:4,"
+"0","       pch=15,title=""Historial de Compra"")"

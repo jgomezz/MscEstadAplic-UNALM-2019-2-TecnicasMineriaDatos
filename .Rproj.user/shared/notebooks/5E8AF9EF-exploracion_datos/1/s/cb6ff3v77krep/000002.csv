@@ -1,0 +1,6 @@
+"0","# Dot Plots"
+"0","# ---------"
+"0","dotchart(prop.table(table(DMark$Edad))*100,"
+"0","         main=""Distribuci?n de la Edad de los Clientes"", "
+"0","         xlab=""% de Clientes"")"
+"2","'x' is neither a vector nor a matrix: using as.numeric(x)"

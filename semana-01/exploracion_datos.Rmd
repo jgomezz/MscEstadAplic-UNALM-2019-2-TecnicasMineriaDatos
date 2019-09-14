@@ -39,11 +39,7 @@ En el resultado se muestra "Ord.factor" que significa que los datos estan ordena
 # Tecnica de Organizacion y Visualizacion de datos
 Se empieza con las variables cualitativas
 
-Presente una tabla de distribucion
-```{r}
-
-```
-
+#Presente una tabla de distribucion de frecuencia para la edad del cliente. Construya una grafica adecuada
 
 #------------------------------------------------------------------#
 #  a) Representacion de Datos Cualitativos                         #
@@ -131,4 +127,116 @@ pie = pie + theme_classic() + theme(axis.line = element_blank(),
 pie
 
 ```
+```{r}
+# Dot Plots
+# ---------
+dotchart(prop.table(table(DMark$Edad))*100,
+         main="Distribuci?n de la Edad de los Clientes", 
+         xlab="% de Clientes")
+
+```
+Todo esto se ha hecho con variables cualitativas
+
+Se tiene que buscar si existe alguna relacion entre las variables cualitativas, eso se hace a traves de una tabla de contigencias.
+
+# Presente una tabla de contigencia para la distribucion de la edad del cliente y el historial del volumen de compra anterior
+
+##___________________________________________________________________________________
+## Ejercicio: Analice la distribuci?n del  Historial de Compra del cliente
+##___________________________________________________________________________________
+
+```{r}
+#------------------------------------------------------------------#
+#  b) Tablas de contingencia                                       #
+#------------------------------------------------------------------#
+tabla1=table(DMark$Edad,DMark$Historial)
+tabla1
+
+```
+En toda la base de adtos se tiene 50 adultos con ingresos medios
+
+
+Distribucion Frecuencia Condicional
+----------------------------------
+
+Se tiene que hacer frecuencias condicionales o frecuencias distribuidas para poder comparar  
+
+* X | Y : La distribcuionde la variable X dado la variable Y , para cada nivel de la variable de Y presento la distribucion de frecuencia de X.  Y -> X , se piensa que la variabla Y es un buen predictor de la variabla X
+* Y | X : La distribcuionde la variable Y dado la variable X , para cada nivel de la variable de X presento la distribucion de frecuencia de Y.  X -> Y , se piensa que la variabla X es un buen predictor de la variabla Y
+
+la asociacion no implica casualidad
+
+El grupo hetareo va afectar en el volumen de compra
+
+No se puede aceptar , compro mas me vuelvo mas joven
+
+```{r}
+CrossTable(x = DMark$Edad,y = DMark$Historial)
+```
+
+```{r}
+#------------------------------------------------------------------#
+#  c) Distribuci?n condicional                                     #
+#------------------------------------------------------------------#
+tabla2=prop.table(tabla1,margin=1) # procesa por fila
+tabla2
+```
+Los jovenes tienen un volumen de compra bajo (0.74545455)
+
+
+Se puede observar en la tabla de contigencias que hay una asociacion entre la edad y el volumen de compra. 
+
+-------------------------------------------------------------
+Como visualizo la asociacion entre las variables cualitativas
+
+1.- Grafica de barras agrupadas al 100%        --> Bajo para el docente
+2.- Grafica de barras con componentes al 100%  --> Medio para el docente
+3.- Grafica de mosaicos                        --> Mejor para el docente
+
+
+```{r}
+# Barras agrupadas
+barplot(t(tabla2),col=2:4,beside = T,  # beside T, sale agrupada. beside F, sale barras normales
+        xlab="Grupo Etario",
+        ylab="Proporci?n de Clientes",
+        main="Distribuci?n del historial de compra seg?n grupo etario")
+legend("topright",legend=levels(DMark$Historial),col=2:4,
+       pch=15,title="Historial de Compra")
+```
+Cuando veo que el grupo etario cambia, esto puede significar que existe algun tipo de agrupamientos
+
+```{r}
+# Barras Componentes
+par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE) #Adicionar espacio extra
+barplot(t(tabla2),col=2:4,
+        xlab="Grupo Etario",
+        ylab="Proporci?n de Clientes",
+        main="Distribuci?n del historial de compra seg?n grupo etario")
+legend("topright", inset=c(-0.27,0),legend=levels(DMark$Historial),col=2:4,
+       pch=15,title="Historial de Compra")
+
+```
+Cuando no hay cambio muy aprecible en las proporciones, se puede decir que son independientes
+
+Cuando hay cambio muy aprecible en las proporciones, se puede decir que existe alguna relacion entre las variables.
+
+
+```{r}
+#Usando ggplot2
+ggplot(data = na.omit(DMark), aes(x = Edad, y = ..count.., fill = Historial)) +
+  geom_bar(position = "fill") +
+  labs(y = "% de clientes", title = "Distribuci?n del historial de compra seg?n grupo etario") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+En el grafico anterior no se muestra que la proporcion de personas con edad media es mayor a los otros, e inclusive las personas que son jovenes parece que fueran la misma cantidad que las personas en edad Media y Adulta.
+
+Grafico de Mosaicos
+
+```{r}
+library(vcd)
+mosaicplot(~ Edad+Historial, data = DMark, color = 2:4, 
+           main="Distribuci?n del historial de compra seg?n grupo etario")
+```
+En esta grafica se aprecia mejor la proporcion de personas en edad de Jovenes, Media y Adulta
 

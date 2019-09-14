@@ -1,0 +1,5 @@
+"0","# Barras agrupadas"
+"0","barplot(t(tabla2),col=2:4,beside = T,  # beside T, sale agrupada. beside F, sale barras normales"
+"0","        xlab=""Grupo Etario"","
+"0","        ylab=""Proporci?n de Clientes"","
+"0","        main=""Distribuci?n del historial de compra seg?n grupo etario"")"
