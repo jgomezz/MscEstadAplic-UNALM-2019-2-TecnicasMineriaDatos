@@ -450,3 +450,52 @@ La varianza . hace que la distribucion tenga mayor o menor dispersion.
 
 A mayor varianza la densidad es mas amplia, se tiene mayor incertidumbre
 Si construyes modelos con varianza de mayor valor se genera  
+
+Que modelo es mejor, va a depender de como lo vayas a usar
+
+Tipo de Medidas Estadisticas :
+
+ - Medida de Tipo de medida central : 
+        * Media ( centro de gravedad) : 
+            ** MAS: Media Aritmetica Simple, 
+            ** MAP: Media Aritmetica Ponderada, 
+            ** MG : Media Geometrica , 
+            ** MA : Media armonica (Se usa para variables expresados en fracciones)
+            ** Trimedia ( Media recortada)
+        * Mediana (centro de distribucion)  
+        * Moda ( el valor mas frecuente ). Cual uso? depende de tu analisis descriptivo.
+ 
+ - Medidas de Posición (Cuantiles) : Describe alguna posicion especifica de la distribución
+        Me da la posicion en la que se encuentra el valor, no me dice que sea buena o malo.
+        Las formas mas comunes son :
+        * Cuartiles :
+        * Deciles :
+        * Percentiles :
+        Cuando se habla de analisis de datos se puede usar cualquier Cuantiles
+        
+ - Medida de Dispersion (Variabilidad) : Medir el nivel de incertidumbre de la distribución
+      * Absolutas:
+        ** Amplitud de intervalos . Con esto se mide la dispersion.
+           *** Rango (Total) : mayor valor - menor valor, no me dice nada de los datos.
+           *** Rango Intercuantilico (RIQ) : Tiene hacer mas confiable
+        ** Distancias: A partir de un punto de referencia, usualmente es la media
+           *** Si tu referencia es la media : Varianza , Desviacion estandar.
+           *** Si tu referencia es la mediana : MAD (desviacion absoluto de la mediana). Es una medida robusta, porque no es sensible a los outlier.
+        Norma L1 : Valor absoluto
+      * Relativas :
+          ** CV : Coeficiente de Variabilidad
+ 
+ - Medida de Formas ( Asimetrica):
+     * Pearson. No se suele usaar
+     * Basado en el 3er momento
+      
+ - Medidas de Concentracion
+    * Curtosis : Se usa el coeficiente del 4to momento.
+ 
+Medida Central: Una medida de representar a la distribucion
+ 
+ ** La media se ve afectada cuando hay datos extremos
+ ** La mediana es mejor para el grafico anterior porque hay valores extremos
+    
+ 
+ 
