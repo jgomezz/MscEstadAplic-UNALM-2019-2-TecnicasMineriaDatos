@@ -1,0 +1,5 @@
+"0","# Lo ordeno bajo un criterio y sobreescribo la variable"
+"0","DMark$Edad = factor(DMark$Edad,levels = c(""Joven"",""Media"",""Adulta""),ordered=TRUE)"
+"0","DMark$Historial = factor(DMark$Historial,levels = c(""Bajo"",""Medio"",""Alto""),ordered=TRUE)"
+"0","#DMark$Edad <- ordered(DMark$Edad, levels =  c(""Joven"",""Media"",""Adulta""))"
+"0",""

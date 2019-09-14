@@ -1,0 +1,94 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+install.packages(c("gmodels", "ggplot2", "vcd","agricolae","tidyverse", "Hmisc", "psych", "fBasics", "treemap", "ggmap", "mosaic"),dependencies = c("Depends"))
+```
+
+```{r}
+#########################################################
+# Ejemplo: Marketing Directo                          #
+#########################################################
+
+# Lectura de datos
+DMark <- read.csv("MarketingDirecto.csv")
+head(DMark)
+```
+```{r}
+str(DMark)
+```
+Hay 10 variables porque hay 10 atributos que se estan estudiando
+Varias de los atributos son de tipo ordinal, en este caso en R les asigna como Factor. No necesariamente es el orden que esperamos, de modo que en la forma descriptiva no se aprecia, se muestra una forma, no es necesariamente la mas optima
+```{r}
+# Lo ordeno bajo un criterio y sobreescribo la variable
+DMark$Edad = factor(DMark$Edad,levels = c("Joven","Media","Adulta"),ordered=TRUE)
+DMark$Historial = factor(DMark$Historial,levels = c("Bajo","Medio","Alto"),ordered=TRUE)
+#DMark$Edad <- ordered(DMark$Edad, levels =  c("Joven","Media","Adulta"))
+
+```
+
+```{r}
+str(DMark)
+```
+En el resultado se muestra "Ord.factor" que significa que los datos estan ordenados
+
+#Se procede a revisar las diferentes tecnicas de epxloracion 
+
+# Tecnica de Organizacion y Visualizacion de datos
+Se empieza con las variables cualitativas
+
+Presente una tabla de distribucion
+```{r}
+
+```
+
+
+#------------------------------------------------------------------#
+#  a) Representacion de Datos Cualitativos                         #
+#------------------------------------------------------------------#
+
+```{r}
+# -------------------
+# Tabla de Frecuencia
+# -------------------
+ni<-table(DMark$Edad) # Son los conteos
+fi<-prop.table(ni) # Calculo de frecuencias absolutas
+pi<-prop.table(ni)*100 # Calculo de frecuencias relativas
+edad.tabla<-t(rbind(ni,fi,pi))
+edad.tabla
+
+```
+Lo mas frecuente son los clientes que tiene una edad "Media" , y son pocos los cliente "Adutlos"
+
+```{r}
+table(DMark$Edad)
+prop.table(table(DMark$Edad)) %>% round(digits = 2)
+```
+```{r}
+## Similar a SAS o SPSS
+library(gmodels)
+CrossTable(DMark$Edad, format="SAS") # Muestra la frecuencia relativa
+```
+```{r}
+CrossTable(DMark$Edad, format="SPSS") # Muestra la frecuencia porcentual
+
+```
+Grafica de Pie : No es recomendable si tiene muchas categorias, si son 2 atributos esta bien
+Grafica de Barras : Si son varias categorias es recomendable 
+
+Si es ordinal si es preferibles usar Barras
+
+# ------------------------------------------------
+# Visualizacion de la Distribucion de la Variable
+# ------------------------------------------------
+
+```{r}
+# Grafico de Barras
+# -------------------
+barplot(pi, main="Distribuci?n de las edades de los clientes", 
+        xlab="Grupo Etario", col = 1,
+        ylab="Porcentaje de Clientes")
+```
+
