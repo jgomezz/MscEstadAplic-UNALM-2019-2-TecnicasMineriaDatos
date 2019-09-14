@@ -91,4 +91,44 @@ barplot(pi, main="Distribuci?n de las edades de los clientes",
         xlab="Grupo Etario", col = 1,
         ylab="Porcentaje de Clientes")
 ```
+```{r}
+# Usando ggplot2
+library(ggplot2)
+ggplot(data = DMark, aes(x = Edad, y = ..count.., fill = Edad)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2","black")) +
+  labs(title = "Distribuci?n de las edades de los clientes") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+```{r}
+# Gr?fico de Sectores Circulares
+# ------------------------------
+pie(pi, main="Distribuci?n de la Edad de los Clientes")
+```
+```{r}
+## Colocar porcentajes
+lbls1 <- paste(names(table(DMark$Edad)), "\n",
+               prop.table(table(DMark$Edad))*100,"%", sep="")
+pie(pi, labels = lbls1,
+	main="Distribuci?n de la Edad de los Clientes")
+```
+```{r}
+# Usando ggplot2
+df = as.data.frame(fi) ; df #Convertir la tabla a un data frame
+pie = ggplot(df, aes(x="", y=Freq, fill=Var1)) + geom_bar(stat="identity", width=1) # Crea una barra simple
+pie = pie + coord_polar("y", start=0) + 
+      geom_text(aes(label = paste0(round(Freq*100), "%")),
+                    position = position_stack(vjust = 0.5)) #Convertir a pie (coordenadas polares)
+pie = pie + scale_fill_manual(values=c("#55DDE0", "#F6AE2D", "#F26419", "#999999")) #Escala de colores
+pie = pie + labs(x = NULL, y = "% de clientes", 
+                           fill = "Grupo Etario",
+                          title = "Distribuci?n del Grupo Etario") # Remover y a?adir etiquetas/t?tulo 
+pie = pie + theme_classic() + theme(axis.line = element_blank(),
+                                    axis.text = element_blank(),
+                                    axis.ticks = element_blank(),
+                                    plot.title = element_text(hjust = 0.5, color = "#666666")) # Limpiar el formato
+pie
+
+```
 

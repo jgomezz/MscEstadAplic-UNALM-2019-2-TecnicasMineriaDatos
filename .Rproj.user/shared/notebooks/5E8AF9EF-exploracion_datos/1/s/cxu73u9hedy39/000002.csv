@@ -1,0 +1,5 @@
+"0","## Colocar porcentajes"
+"0","lbls1 <- paste(names(table(DMark$Edad)), ""\n"","
+"0","               prop.table(table(DMark$Edad))*100,""%"", sep="""")"
+"0","pie(pi, labels = lbls1,"
+"0","	main=""Distribuci?n de la Edad de los Clientes"")"
