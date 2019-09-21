@@ -1,0 +1,132 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Las fase de preparacion de datos me deberia dar una base que los datos tienen una calidad 
+para construir modelos
+
+Hablar de calidad de los datos, que aspectos deberia enfocarme para saber como construir modelo
+
+Todo parte de asumir que los datos sean malos, y debemos explorar para asumir que los datos son validos
+
+La tecnica de GIGO ==> Garbaga Input -- Garbage Output
+
+Asumimos que los datos necesian una limpieza de datos
+
+Siempre hay que asumir que 
+
+Cuantificar los datos
+
+NA - Codigo perdido
+
+###################################################
+
+Los datos deben ser adecuados para un metodo en particular
+
+Los datos en la vida real estan sucios:
+
+*Datos incompletos : Cuando hay datos perdidos : missing data. Hay campos donde no hay informacion y hay que verificar porque no se tuvieron los datos, evaluar es un dato complejo, pero si se perdio un dato no pasa nada, si son muchos, tenemos un problema
+
+*Datos Anomalos: Cuando hay errores y cuando hay outlier , por ejemplo si el salario es -10, es un dato erroneo
+
+*Datos Inconsistencias: Contienen discrepancias entre los codigos y los nombres
+
+*Interpretabilidad: Etiquetas de variables , por ejemplo tengo etiquetas del mercado donde un bien es peresible. Cateogria definidas
+
+*Imprecision: Los datos no se estan registrando de la manera adecuado
+
+Tienen los criterios de calidad adecuado
+
+# Principales Tareas en la Prepracion de los Datos I
+
+* Limpieza de datos
+* Integracion de datos
+* Transformacion de datos
+* Reduccion de datos -- ( Con componentes principales )
+* Discretizacion de datos
+
+# Datos perdidos
+
+* Un equipo esta funcionando mal
+* Inconsistencia de los datos
+* No se registro los datos
+
+Proceso de imputacion :
+
+Detectar y evaluar el posible impacto cuando los datos no estan perdidos. No es ver la fuente de porque los datos estan perdidos
+
+Saber de manera generarl que se puede hacer, hacer un diagnostico
+
+Si la situacion es simple --> Es posible resolverlo
+Si la situacion es compleja --> investiga que impacto tendria ...!
+
+Que alternativas de solucion se puede hacer, no es siempre trivial lo que se puede hacer
+
+Tratar de entender la causa de la perdida de datos
+
+Cada modelo tiene un impacto de como recuperamos el dato perdido
+
+Para regresion logisitca, arbol de clasificacion 
+
+#Datos perdidos : Impacto
+
+- 1% datos faltantes -- trivial
+- 1 -5 % manejable , hay que buscar el mecanismo de generacion de los datos
+- 5 - 15 % - requier metodos sofisticados ( se requiere un modelo de imputacion de modelos)
+- Mas de 15% - interpretacion perjudicial
+
+# El mecanismo que origina los datos perdidos
+
+Los datos se producen a traves de un mecanismo de generacion , tambien deberia haber un mecanismo de eliminacion de datos.
+
+Siempre que los datos perdidos tengan una forma aleatoria debe tener un mecanismo de eliminacion de datos.
+
+Si hay un patron deterministico , no se puede hacer nada
+
+Causa aleatoria : Se fue la luz 
+
+Causa no aleatorio : cuando el mismo dato hace que se pierda el dato, el caso es de tipo no aleatorio.
+
+Se tienen que hacer una auditoria para ver que paso con los datos
+
+Si la perdida es por un tema aleatoria, debemos usar metodos estadisticos.
+
+Resumiendo, los mecanismos de datos puede ser:
+* Mecanismos Aleatorios:
+      - MCAR : Mecanismo completamente aleatorio
+      - MAR : Mecanismo aleatorio
+* Mecanismos No aleatorios: 
+      - NMAR : No MAR    
+
+Salario  |  Edad
+------------------
+1000     |  32
+1200     |  19
+2300     |  33
+3400     |  38
+4100     |  40
+5800     |  50
+6700     |  60
+
+
+MCAR :
+Pierdo datos del salario , pero no debido a la variable salario ni ninguna otra variable. 
+Por ejemplo no hay salario 
+
+MAR :
+CUando la perdida de la variable esta relacionado al efecto de otras variables
+No importa si el mecanismo que sea deterministico este dado por la otra variables
+Por ejemplo: Las personas mayores de 50 anhos no desean decir su salario
+
+NMAR :
+Cuando los datos perdidos depende del mismo dato o de otras variables : Por ejemplo cuando las personas no te quieren decir que su salario es mayor a un monto especifico
+
+
+
+
+```{r}
+
+```
+
+

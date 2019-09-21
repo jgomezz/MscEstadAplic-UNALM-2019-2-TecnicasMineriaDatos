@@ -502,5 +502,60 @@ Para medir la distancia se usan:Norma L1 : Valor absoluto
 ---------------
  
  Me da informacion para comparar 
+
+
+
+-----------------------------
+
+# Semana 03 -- LLEGUE TARDE   21/09/2019
+
+La correlacion de Pearson es solo para relacion lineal
+
+Las 2 variables vienen de 2 distribuciones normales si no, no se puede hacer inferencia
+
+##___________________________________________________________________________________
+## Ejercicio: Realice un an?lisis comparativo de los gastos de los clientes por
+##___________________________________________________________________________________
+
+#------------------------------------------------------------------#
+# h)  Asociaci?n                                                     #
+#------------------------------------------------------------------#
+
  
+```{r}
+plot(DMark$Salario,DMark$Monto)
+cor(DMark$Salario,DMark$Monto)
+
+```
  
+Que pasa si no puedo mantener el supuesto de distribucion bimanaria
+
+Calcular la correlacion de Heldan , suobre parametricas
+
+Las 2 variables son continuas $Montos y $Salarios
+
+
+Las otras variables son discretas, 
+
+```{r}
+# Matriz de Diagramas de dispersi?n
+pairs(~Salario + Monto + Hijos + Catalogos,data=DMark)
+cor(DMark[,c(6,7,9,10)])
+corr.test(DMark[,c(6,7,9,10)]) # Hace la prueba estadistica, solo si se cumple el supuesto de 
+                               # de homogenidad bi banaria
+cor.plot(cor(DMark[,c(6,7,9,10)]))
+```
+Se observa que las graficas de las variables discretas son columnas , en cambios en las variables se muestras una regresion lineal
+
+Relacion entre el numero de hijos y el monto : Hay un tipo de asociacion inversa, conforme el usuario tiene mas hijos tiene menos montos
+
+A medida que se envian mas catalogos hay mas gastos de produccion
+
+
+
+```{r}
+cor.plot(cor(DMark[,c(6,7,9,10)]))
+```
+
+Azul es mas directa
+Rojo es inversa

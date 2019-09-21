@@ -1,0 +1,89 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Instalaci?n de Paquetes
+
+Libreria para missing
+VIM
+MICE
+simputation
+AMELIA
+
+```{r}
+install.packages(c("VIM","DEoptimR","minqa","nloptr","DMwR", "simputation"),
+                 dependencies = c("Depends"))
+```
+#########################################################
+#  Diagn?stico de datos perdidos                        #
+#########################################################
+
+Indicadores de medidiciones del mar
+```{r}
+install.packages("robustbase")
+```
+```{r}
+install.packages("laeken")
+```
+```{r}
+install.packages("ranger")
+```
+
+```{r}
+library(ranger)
+library(laeken)
+library(robustbase)
+library(VIM)
+data(tao)
+head(tao)
+help(tao) #https://en.wikipedia.org/wiki/Tropical_Atmosphere_Ocean_project
+```
+La funcion nos devuelve datos perdidos (NA)
+```{r}
+summary(tao)
+```
+Para ver la cantidad  datos perdidos 
+```{r}
+#Para ver que columnas tienen valores perdidos
+which(colSums(is.na(tao))!=0)
+```
+#Para ver el porcentaje de valores perdidos en las columnas
+```{r}
+colmiss=c(4,5,6)
+per.miss.col=100*colSums(is.na(tao[,colmiss]))/dim(tao)[1]
+per.miss.col
+```
+Se ve que la temperatura de la superficie  es menor del 4.07%
+Se ve que la temperatura de aire  es mayor del 11%
+Se ve que la humedad  es mayor del 12%
+
+Se debe usar mecanismo para la generacion de los datos, debemos usar algun mecanismo para la generacion de los datos.
+
+```{r}
+# Aggregation plot
+a=aggr(tao,numbers=T)
+
+```
+
+Si se ve el color rojo es que se perdieron datos
+
+Tengo un 76.77% de filas completas
+Tengo un 12.23% que tiene datos faltantes para la variable humedad
+Tengo un 0.27% que se han perdido datos en simultaneo para la humedad, temperatura del aire y  temperatura en la superficie del mar. 
+
+CONCLUSION: Se observa que hay 2 variables que tienen datos perdidos mayores a 10%, por lo tanto son altos
+
+```{r}
+a
+```
+
+
+```{r}
+summary(a)
+```
+
+```{r}
+aggr(tao,numbers=T, sortComb=TRUE, sortVar=TRUE, only.miss=TRUE)
+```
+
