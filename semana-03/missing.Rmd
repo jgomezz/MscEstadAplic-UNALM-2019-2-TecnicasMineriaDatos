@@ -87,3 +87,251 @@ summary(a)
 aggr(tao,numbers=T, sortComb=TRUE, sortVar=TRUE, only.miss=TRUE)
 ```
 
+
+
+
+MAR --> Color fijo
+MCAR --> Calores variables
+
+Color rojo : Son datos perdidos
+Color claro : 
+
+Patron de tipo MAR : porque la perdida de la humedad esta relacionado con la temperatura del aire baja, en el primer anho
+
+#########################################################
+#  Mecanismo: ?MCAR o MAR?                              #
+#########################################################
+```{r}
+# Matrix plot
+matrixplot(tao)
+```
+
+Cuando la variable de temperatura es alta, se pierden la temperatura del aire solo para el primer anho
+
+###############
+Se grafica de las variables 4 y 5 que son las variables que han perdido los datos
+
+```{r}
+#Parallel boxplots
+VIM::pbox(tao[4:6], pos=1)  # la varable de la temperatura del mar - pos =1
+```
+1er grafico : Temperatura de la superficie del mar es mostrada con todas las variables 
+2do grafico : Sin missing de la variable de la temperatura del aire
+3er grafico : Con missing de la variable de la temperatura del aire
+
+
+#---------------------------------------------------
+Si el mecanismo es el MAR las cajas deben ser diferentes
+Si el mecanismo es MCAR las cajas deberian ser iguales 
+#---------------------------------------------------
+
+Si la temperatura del mar es alta se pierden los datos de la temperatura del aire
+
+Si la temperatura del mar es bajo de lo usual se pierden los datos de la humedad
+
+# Se suele usar los graficos de dispersion
+
+Diagrama de dispersion entre las variables que tienen mayor cantidad de datos perdidos
+
+```{r}
+# Gr?ficos de dispersi?n
+marginplot(tao[,c("Air.Temp", "Humidity")])
+```
+
+# Supuestos para hacer la prueba de medias
+- Los valores deben ser obtenidos datos aleatorios
+- Deben venir de una distribucion normal
+
+# Prueba de medias
+H0: $mu_{NM}$ = $mu_{M}$ 
+H1: $mu_{NM}$ != $mu_{M}$  --> MAR
+
+```{r}
+# Prueba t de medias
+t.test(Sea.Surface.Temp ~ is.na(Humidity), data=tao)
+```
+Como el p es casi cero, se tiene evidencia para descartar la hipotesis nula , por lo tanto podemos asumir que la medias son distintas y se acepta el mecanismo MAR
+
+NOTA : Se observa que no se probaron ninguna prueba por lo tanto el valor obtenido es solo un mecanismo referencial
+
+# Solucion:
+
+- Eliminar (eliminar filas) , solo se usa en el caso trivial
+
+- Reemplazar (imputar), reemplazar el valor faltante con el valor de medida central : media, mediana o moda . Se aplica cuando el mecanismo sea MCAR y si es manejable. Un mecanismo mas complejo podria ser una regresion ( cuando el mecanismo es MAR y es manejable).
+    
+  Si el porcentaje es de 5 a 15% de datos faltantes y es MAR, se puede usar un mecanismo de regresion. Por ejemplo los modelos que podrian usarse seria ( estos modelos ya han sido estudiados por otras personas)
+        * Maquina de Soporte Vectorial
+        * Regresion Multiple
+        * Boosting
+
+  Las librerias para imputacion complejas son : VIM y simputacion 
+
+- Mantener
+
+
+#########################################################
+#  Eliminaci?n de casos (solo si es trivial)            #
+#########################################################
+
+No se debe hacer eso, pero es una forma de mostrar como usar la funcion
+```{r}
+tao.cl=na.omit(tao)
+```
+
+#########################################################
+#  Imputaci?n                                           #
+#########################################################
+
+```{r}
+install.packages("ROCR")
+```
+
+
+```{r}
+#----------------------------------------#
+# Usando una medida de Tendencia Central #
+#----------------------------------------#
+library(DMwR)
+tao.c<-centralImputation(tao)
+tao.d<-initialise(tao,method="median")
+```
+
+
+```{r}
+summary(tao.d)
+```
+```{r}
+install.packages("gower")
+```
+
+
+```{r}
+#----------------------------------------#
+# Usando Modelos de Regresi?n            #
+#----------------------------------------#
+
+library(simputation)
+```
+
+
+$y_i = beta_0 + beta_1*x_1 + beta_2*x_2 + ... + beta_{pi}*x_{pi} + error$
+
+$y_i = mu_{y/(x media)} + error$
+
+$y_i = beta_0*1 + error$
+
+En el ultimo caso la media de la poblacion es gual a la media del estadistico
+
+```{r}
+## Reemplazando por la media
+tao.i <- impute_lm(tao, Air.Temp + Humidity ~ 1) # voy a imputar en paralelo a las variables Air.Temp y Humidity . El 1 es por el modelo lineal con beta0
+tao[c(108:110, 463,551:552),]
+```
+
+```{r}
+mean(tao$Air.Temp, na.rm = TRUE)
+mean(tao$Humidity, na.rm = TRUE)
+```
+```{r}
+tao.i[c(108:110, 463,551:552),]
+
+```
+
+
+Valor estocastico del error
+## Reemplazando por la media de cada anho
+
+```{r}
+tao.i <- impute_lm(tao, Air.Temp + Humidity ~ 1 | Year)
+```
+
+```{r}
+tao[c(108:110, 463,551:552),]
+
+```
+
+Se reemplazo con la media de cada anho
+```{r}
+tao.i[c(108:110, 463,551:552),]
+```
+
+```{r}
+## Considerando otras variables como predictoras
+tao.i <- impute_lm(tao, Air.Temp + Humidity ~ Sea.Surface.Temp + UWind + VWind)
+tao[c(108:110, 463,551:552),]
+tao.i[c(108:110, 463,551:552),]
+
+```
+
+
+```{r}
+## Adicionando un residuo aleatorio
+tao.i <- impute_lm(tao, Air.Temp + Humidity ~ Sea.Surface.Temp + UWind + VWind, add_residual = "normal")
+tao[c(108:110, 463,551:552),]
+tao.i[c(108:110, 463,551:552),]
+```
+RECUERDA QUE:
+
+y = 3 + 2x + ERROR
+
+ERROR -- N (0, Sigma al 2) 
+
+Sigma la 2 = CME
+
+impute_lm : Solo para variables cuantitativas continuas
+
+
+# K-vecinos mas cercanos
+
+Cuando tienes variables categorias , una mecanismo de los K vecinos mas cercanos
+
+k = 1
+
+    X1   X2  X3
+a1  3    6    7
+a2  4    5    ?      ? = 7
+a3  6    ?    4      ? = 11
+a4  7   11    2 
+a5  ?    4   13      ? = 3 
+
+Se usa la distancia euclediana
+d(a1,a2) = sqrt((3-4)^2 + (6-5)^2) = sqrt(2)   : Es la menor distancia, se elige 7
+d(a1,a4) = sqrt((3-7)^2 + (6-1)^2) = sqrt(....)
+
+#
+9 de diciembre, calibracion de parametros
+
+
+#----------------------------------------#
+# K-Vecinos m?s cercanos                 #
+#----------------------------------------#
+```{r}
+
+# Usando la libreria VIM
+tao_vars <- c("Air.Temp","Humidity")
+tao_i_knn <- VIM::kNN(data=tao, variable=tao_vars) # EL k valor por defecto es 5
+```
+
+
+
+```{r}
+tao[c(108:110, 463,551:552),]
+```
+
+
+```{r}
+tao_i_knn[c(108:110, 463,551:552),] # Te indica que valores han sido reemplazados , se pone a TRUE
+```
+```{r}
+aggr(tao_i_knn, delimiter="_imp", numbers=TRUE, prop=c(TRUE,FALSE))
+```
+
+```{r}
+aggr(tao_i_knn,delimiter="_imp",numbers=TRUE, prop=c(TRUE,FALSE), combined = TRUE)
+```
+
+```{r}
+barMiss(tao_i_knn, delimiter="imp", selection="any")
+```
+

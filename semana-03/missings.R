@@ -1,9 +1,9 @@
-# Instalación de Paquetes
+# Instalaci?n de Paquetes
 install.packages(c("VIM","DEoptimR","minqa","nloptr","DMwR", "simputation"),
                  dependencies = c("Depends"))
 
 #########################################################
-#  Diagnóstico de datos perdidos                        #
+#  Diagn?stico de datos perdidos                        #
 #########################################################
 
 library(VIM)
@@ -28,7 +28,7 @@ summary(a)
 aggr(tao,numbers=T, sortComb=TRUE, sortVar=TRUE, only.miss=TRUE)
 
 #########################################################
-#  Mecanismo: ¿MCAR o MAR?                              #
+#  Mecanismo: ?MCAR o MAR?                              #
 #########################################################
 
 # Matrix plot
@@ -40,16 +40,16 @@ VIM::pbox(tao[4:6], pos=1)
 # Prueba t de medias
 t.test(Sea.Surface.Temp ~ is.na(Humidity), data=tao)
 
-# Gráficos de dispersión
+# Gr?ficos de dispersi?n
 marginplot(tao[,c("Air.Temp", "Humidity")])
 
 #########################################################
-#  Eliminación de casos (solo si es trivial)            #
+#  Eliminaci?n de casos (solo si es trivial)            #
 #########################################################
 tao.cl=na.omit(tao)
 
 #########################################################
-#  Imputación                                           #
+#  Imputaci?n                                           #
 #########################################################
 
 #----------------------------------------#
@@ -60,7 +60,7 @@ tao.c<-centralImputation(tao)
 tao.d<-initialise(tao,method="median")
 
 #----------------------------------------#
-# Usando Modelos de Regresión            #
+# Usando Modelos de Regresi?n            #
 #----------------------------------------#
 
 library(simputation)
@@ -71,7 +71,7 @@ mean(tao$Air.Temp, na.rm = TRUE)
 mean(tao$Humidity, na.rm = TRUE)
 tao.i[c(108:110, 463,551:552),]
 
-## Reemplazando por la media de cada año
+## Reemplazando por la media de cada a?o
 tao.i <- impute_lm(tao, Air.Temp + Humidity ~ 1 | Year)
 tao[c(108:110, 463,551:552),]
 tao.i[c(108:110, 463,551:552),]
@@ -87,12 +87,12 @@ tao[c(108:110, 463,551:552),]
 tao.i[c(108:110, 463,551:552),]
 
 #----------------------------------------#
-# K-Vecinos más cercanos                 #
+# K-Vecinos m?s cercanos                 #
 #----------------------------------------#
 
 # Usando la libreria VIM
 tao_vars <- c("Air.Temp","Humidity")
-tao_i_knn <- VIM::kNN(data=tao, variable=tao_vars)
+tao_i_knn <- VIM::kNN(data=tao, variable=tao_vars) # EL k valor por defecto es 5
 
 tao[c(108:110, 463,551:552),]
 tao_i_knn[c(108:110, 463,551:552),]
@@ -109,6 +109,7 @@ tao_i_knn2[c(108:110, 463,551:552),]
 #-------------------------------------------------#
 # Iterative robust model-based imputation (IRMI)  #
 #-------------------------------------------------#
+#Usa regresiones interactivas
 tao.i.irmi <- irmi(tao)
 summary(tao.i.irmi)
 tao.i.irmi[c(108:110, 463,551:552),]
