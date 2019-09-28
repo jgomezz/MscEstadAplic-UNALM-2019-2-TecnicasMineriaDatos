@@ -1,9 +1,9 @@
 #########################################################
-#  Análisis Univariado de Valores Extremos              #
+#  An?lisis Univariado de Valores Extremos              #
 #########################################################
 
 #-------------------------------------------------------#
-#  Simulación                                           #
+#  Simulaci?n                                           #
 # ------------------------------------------------------#
 set.seed(123)
 dat <- matrix(rnorm(5*100),100,5)
@@ -21,16 +21,16 @@ which.min(dat[,4])
 #-------------------------------------------------------#
 #  Ejemplo: Empleados de Midwestern bank (1965)         #
 # ------------------------------------------------------#
-# ID = Código del empleado                              #
+# ID = C?digo del empleado                              #
 # SALBEG = Salario inicial                              #
-# GENDER = Género                                       #
+# GENDER = G?nero                                       #
 # JOBTIME = Meses en el  trabajo                        #
-# AGE = Edad (años)                                     #
+# AGE = Edad (a?os)                                     #
 # SALNOW = Salario actual                               #
-# EDLEVEL = Experiencia académica (años)                #
-# WORKEXP = Experiencia laboral previa (años)           #
-# JOBCAT = Categoría laboral                            #
-# MINORITY = Pertenece a minoría racial                 #
+# EDLEVEL = Experiencia acad?mica (a?os)                #
+# WORKEXP = Experiencia laboral previa (a?os)           #
+# JOBCAT = Categor?a laboral                            #
+# MINORITY = Pertenece a minor?a racial                 #
 #-------------------------------------------------------#
 
 Bank <- read.delim("BwBankTab.dat" )
@@ -41,7 +41,7 @@ Bank$GENDER <- as.factor(Bank$GENDER); levels(Bank$GENDER)<- c("Hombre","Mujer",
 Bank$MINORITY <- as.factor(Bank$MINORITY); levels(Bank$MINORITY)<- c("Blanco","No blanco",NA)
 Bank$JOBCAT <- as.factor(Bank$JOBCAT)
 levels(Bank$JOBCAT)<- c(NA, "Oficinista", "Asistente", "Seguridad", 
-                        "Académico", "Empleado", "Ejecutivo", "Técnico" )
+                        "Acad?mico", "Empleado", "Ejecutivo", "T?cnico" )
 Bank$SALBEG[Bank$SALBEG == 0] <- NA
 Bank$JOBTIME[Bank$JOBTIME == 0] <- NA
 Bank$AGE[Bank$AGE == 0] <- NA
@@ -63,8 +63,8 @@ is_outlier <- function(x) {
 }
 
 p1 <- Bank %>%
-  mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>%
-  ggplot(., aes(x = 1, y = SALBEG)) +
+  mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>% # genera un nuevo objeto
+  ggplot(., aes(x = 1, y = SALBEG)) +       # se grafica
   geom_boxplot(fill="lightblue") +
   geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
   theme_bw()
@@ -98,8 +98,8 @@ p5 <- Bank %>%
   theme_bw()
 
 p6 <- Bank %>%
-  mutate(outlier = ifelse(is_outlier(EDLEVEL), ID, as.numeric(NA))) %>%
-  ggplot(., aes(x = 1, y = EDLEVEL)) +
+  mutate(outlier = ifelse(is_outlier(WORKEXP), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = WORKEXP)) +
   geom_boxplot(fill="lightblue") +
   geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
   theme_bw()
@@ -108,13 +108,16 @@ library(ggpubr)
 final_plot <- ggarrange(p1, p2, p3, p4, p5, p6, ncol = 2, nrow = 3)
 final_plot <- annotate_figure(
   final_plot,
-  top = text_grob("Análisis Univariado de Valores Extremos", size = 15))
+  top = text_grob("An?lisis Univariado de Valores Extremos", size = 15))
 final_plot
 
 # Ver outliers para una variable (JOBTIME)
 Bank[is_outlier(Bank$JOBTIME),]
 
-# Detección de valores extremos por grupos
+# Ver outliers para una variable (EDLEVEL)
+Bank[is_outlier(Bank$EDLEVEL),]
+
+# Detecci?n de valores extremos por grupos
 p1 <- Bank %>%
   group_by(GENDER) %>%
   mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>%
@@ -157,8 +160,8 @@ p5 <- Bank %>%
 
 p6 <- Bank %>%
   group_by(GENDER) %>%
-  mutate(outlier = ifelse(is_outlier(EDLEVEL), ID, as.numeric(NA))) %>%
-  ggplot(., aes(x = GENDER, y = EDLEVEL)) +
+  mutate(outlier = ifelse(is_outlier(WORKEXP), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = WORKEXP)) +
   geom_boxplot(fill="lightblue") +
   geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
   theme_bw()
@@ -167,10 +170,10 @@ library(ggpubr)
 final_plot <- ggarrange(p1, p2, p3, p4, p5, p6, ncol = 2, nrow = 3)
 final_plot <- annotate_figure(
   final_plot,
-  top = text_grob("Análisis Univariado de Valores Extremos por Género", size = 15))
+  top = text_grob("An?lisis Univariado de Valores Extremos por G?nero", size = 15))
 final_plot
 
-# Puntuación Z
+# Puntuaci?n Z
 #--------------
 
 is_outlier2 <- function(x,k = 2) {
@@ -180,7 +183,7 @@ is_outlier2 <- function(x,k = 2) {
 Bank[is_outlier2(Bank$SALBEG,3),]
 
 #########################################################
-#  Análisis Multivariado de Valores Extremos            #
+#  An?lisis Multivariado de Valores Extremos            #
 #########################################################
 
 #-------------------------------------------------------#
@@ -232,7 +235,7 @@ plot(dat, xlim=c(-5,5), ylim=c(-5,5))
 points(dat[301,1],dat[301,2],col="red")
 
 #-------------------------------------------------------#
-# Ejemplo: Más dimensiones                              #
+# Ejemplo: M?s dimensiones                              #
 #-------------------------------------------------------#
 load(file = "3dExample.rda")
 #load(file = file.choose())
@@ -288,10 +291,10 @@ uni.plot(dat,symb = TRUE)
 
 
 #########################################################
-#  Outliers Multivariados (Otros métodos)               #
+#  Outliers Multivariados (Otros m?todos)               #
 #########################################################
 
-# PCOut Method (robust principal components - más adecuado para grandes dimensiones)
+# PCOut Method (robust principal components - m?s adecuado para grandes dimensiones)
 # Ver Filzmoser et al. (2008) Outlier identification in high dimensions
 outlier=pcout(dat, makeplot = TRUE)
 outlier

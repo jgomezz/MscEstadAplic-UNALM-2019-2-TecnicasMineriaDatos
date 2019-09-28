@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 #########################################################
-#  An?lisis Univariado de Valores Extremos              #
+#  Análisis Univariado de Valores Extremos              #
 #########################################################
 
 ```{r}
@@ -31,6 +31,7 @@ pairs(dat)
 which.min(dat[,4])
 
 ```
+
 
 
 #-------------------------------------------------------#
@@ -85,6 +86,7 @@ Bank <- na.omit(Bank)
 #------------
 
 library(dplyr)  # me permite seleccionar datos
+                # se usa en Ciencia de Datos
 
 library(ggplot2) # construir graficos mas vistosas
 
@@ -95,19 +97,212 @@ is_outlier <- function(x) {
 }
 
 ```
+Se observan 6 variables cualitativas 
 ```{r}
+
+# el comando mutate permite modificar el dataset
 p1 <- Bank %>%
-  mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>%
-  ggplot(., aes(x = 1, y = SALBEG)) +
+  mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>% # genera un nuevo objeto
+  ggplot(., aes(x = 1, y = SALBEG)) +       # se grafica
   geom_boxplot(fill="lightblue") +
   geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
   theme_bw()
 
+p2 <- Bank %>%
+  mutate(outlier = ifelse(is_outlier(SALNOW), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = SALNOW)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
 
+p3 <- Bank %>%
+  mutate(outlier = ifelse(is_outlier(JOBTIME), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = JOBTIME)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
 
+p4 <- Bank %>%
+  mutate(outlier = ifelse(is_outlier(AGE), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = AGE)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p5 <- Bank %>%
+  mutate(outlier = ifelse(is_outlier(EDLEVEL), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = EDLEVEL)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p6 <- Bank %>%
+  mutate(outlier = ifelse(is_outlier(WORKEXP), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = WORKEXP)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+```
+
+```{r}
+install.packages("ggpubr")
+```
+
+```{r}
+library(magrittr)
+library(ggpubr) # Se usa para generar varias graficas a mismo tiempo
+
+final_plot <- ggarrange(p1, p2, p3, p4, p5, p6, ncol = 2, nrow = 3)
+final_plot <- annotate_figure(
+  final_plot,
+  top = text_grob("An?lisis Univariado de Valores Extremos", size = 15))
+final_plot
+
+```
+
+# Segun la regla de Turkey se calcula los outlier : JOBTIME
+```{r}
+# Ver outliers para una variable (JOBTIME)
+Bank[is_outlier(Bank$JOBTIME),]
 ```
 
 
 
+```{r}
+# Ver outliers para una variable (EDLEVEL)
+Bank[is_outlier(Bank$EDLEVEL),]
 
+```
+Son inusuales porque tiene entre 20 y 21 años de experiencia academica
+
+
+# Segun la regla de Turkey se calcula los outlier : EDLEVEL
+```{r}
+ # Ver outliers para una variable (EDLEVEL)
+Bank[is_outlier(Bank$EDLEVEL),]
+```
+```{r}
+# Detecci?n de valores extremos por grupos
+p1 <- Bank %>%
+  group_by(GENDER) %>%
+  mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = SALBEG)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p2 <- Bank %>%
+  group_by(GENDER) %>%
+  mutate(outlier = ifelse(is_outlier(SALNOW), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = SALNOW)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p3 <- Bank %>%
+  group_by(GENDER) %>%
+  mutate(outlier = ifelse(is_outlier(JOBTIME), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = JOBTIME)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p4 <- Bank %>%
+  group_by(GENDER) %>%
+  mutate(outlier = ifelse(is_outlier(AGE), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = AGE)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p5 <- Bank %>%
+  group_by(GENDER) %>%
+  mutate(outlier = ifelse(is_outlier(EDLEVEL), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = EDLEVEL)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+p6 <- Bank %>%
+  group_by(GENDER) %>%
+  mutate(outlier = ifelse(is_outlier(WORKEXP), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = GENDER, y = WORKEXP)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+```
+
+```{r}
+library(ggpubr)
+final_plot <- ggarrange(p1, p2, p3, p4, p5, p6, ncol = 2, nrow = 3)
+final_plot <- annotate_figure(
+  final_plot,
+  top = text_grob("An?lisis Univariado de Valores Extremos por G?nero", size = 15))
+final_plot
+```
+
+```{r}
+# Puntuaci?n Z
+#--------------
+
+is_outlier2 <- function(x,k = 2) {
+  return(abs(scale(x)) > k) # funcion scale ?
+}
+
+# Va a determinar si una valor supera 3 veces la desviacion estandard
+Bank[is_outlier2(Bank$SALBEG,3),]
+```
+
+```{r}
+# Va a determinar si una valor supera 5 veces la desviacion estandard
+Bank[is_outlier2(Bank$SALBEG,5),]
+```
+
+
+
+```{r}
+require(stats)
+x <- matrix(1:10, ncol = 2)
+(centered.x <- scale(x, scale = FALSE))
+cov(centered.scaled.x <- scale(x)) # all 1
+```
+
+Distribucion normal multivariada
+
+
+Matriz de Varianza Covarianza
+
+
+Distancia de Mahalonobis al cuadrado
+
+ 2                    T      -1
+D (X ; u_x)  = (x - u ). sigma (x - u)
+       _-_     _-_  _-_            _-_
+       
+    Media del 
+    centroide
+      
+    
+         u1
+         u2  
+ u   =  [u3  ]   
+_-_      ..
+         up
+        
+
+                   2
+            sigma_1
+ 
+ 
+ sigma = [  ]
+
+
+        
+        
+```{r}
+qchisq(0.975,2)
+```
+Si tengo un valor que es mayor a 7.38 , se puede considerar que es un outlier
+      
 
