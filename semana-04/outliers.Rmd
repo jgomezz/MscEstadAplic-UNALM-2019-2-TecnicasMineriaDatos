@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#########################################################
+#  An?lisis Univariado de Valores Extremos              #
+#########################################################
+
+```{r}
+#-------------------------------------------------------#
+#  Simulaci?n                                           #
+# ------------------------------------------------------#
+
+set.seed(123)
+dat <- matrix(rnorm(5*100),100,5)
+summary(dat)
+boxplot(dat)
+#pairs(dat) 
+
+```
+Se ve que a pesar de haber simulado los datos, aparecen outlier porque de acuerdo a turkey existe una probabilidad de que algunos datos sean posibles outlier (70% ?)
+
+```{r}
+# (introducimos un outlier)
+dat[23,4] <- dat[23,4] * 10
+summary(dat)
+boxplot(dat)
+pairs(dat)
+
+which.min(dat[,4])
+
+```
+
+
+#-------------------------------------------------------#
+#  Ejemplo: Empleados de Midwestern bank (1965)         #
+# ------------------------------------------------------#
+# ID = C?digo del empleado                              #
+# SALBEG = Salario inicial                              #
+# GENDER = G?nero                                       #
+# JOBTIME = Meses en el  trabajo                        #
+# AGE = Edad (a?os)                                     #
+# SALNOW = Salario actual                               #
+# EDLEVEL = Experiencia acad?mica (a?os)                #
+# WORKEXP = Experiencia laboral previa (a?os)           #
+# JOBCAT = Categor?a laboral                            #
+# MINORITY = Pertenece a minor?a racial                 #
+#-------------------------------------------------------#
+
+```{r}
+
+Bank <- read.delim("BwBankTab.dat" )
+head(Bank)
+
+```
+
+# Asignar etiquetas y valores perdidos
+
+```{r}
+Bank$GENDER <- as.factor(Bank$GENDER); levels(Bank$GENDER)<- c("Hombre","Mujer",NA)
+Bank$MINORITY <- as.factor(Bank$MINORITY); levels(Bank$MINORITY)<- c("Blanco","No blanco",NA)
+Bank$JOBCAT <- as.factor(Bank$JOBCAT)
+levels(Bank$JOBCAT)<- c(NA, "Oficinista", "Asistente", "Seguridad", 
+                        "Acad?mico", "Empleado", "Ejecutivo", "T?cnico" )
+```
+

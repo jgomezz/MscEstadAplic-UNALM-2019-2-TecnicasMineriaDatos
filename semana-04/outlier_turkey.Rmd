@@ -1,0 +1,21 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+
+q1 <- qnorm(0.25)
+q3 <- qnorm(0.75)
+
+LS <- q3 + 1.5* (q3-q1)
+
+pnorm(-LS)
+
+pnorm(-LS)*2*100
+
+# se puede deducir que las probabilidad de que un valor fuera de este rango tiene la probabilidad de un 70% de ser outlier
+
+```
+
