@@ -1,0 +1,220 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Analisis con datos simulados
+--------------------------------
+# Varias variables  : solo porque son quantitativas
+
+```{r}
+#-------------------------------------------------------#
+# Ejemplo: M?s dimensiones                              #
+#-------------------------------------------------------#
+load(file = "3dExample.rda")
+#load(file = file.choose())
+pairs(dat)
+```
+No se puede apreciar los outlier porque son 3 variables a considerar, podemos confundirnos pensando como 1 o 2 varibles, graficamente no se puede hacer
+
+
+```{r}
+head(dat) # Tiene 300 filas
+```
+
+```{r}
+# Introduciendo outliers
+outFactor <- 1.5  # Factor de inflacion
+dat <- rbind(dat, outFactor*c(-1,-1.2,0.7))  
+pairs(dat)
+pairs(dat, col = c(rep(1,300), 2), pch = c(rep(1,300), 3), cex = c(rep(1,300), 2))
+
+```
+No se aprecia los outlier comparando con el grafico de dispersion inicial
+
+```{r}
+d <- mahalanobis(dat, colMeans(dat), cov(dat))
+barplot(d, main="Mahalanobis")
+which.max(d)
+
+```
+En la grafica de la distancia de Mahalanobis se puede apreciar el potencial outlier
+```{r}
+# QQ-plot:
+par(mfrow=c(1,1))
+# Como tengo 3 variables ahora tengo 3 grados de libertad
+qqplot(d, qchisq(ppoints(301), df = 3),  
+       main = expression("Q-Q plot for" ~~ {chi^2}[nu == 3]))
+
+```
+
+```{r}
+# Se grafica la ojiva
+plot(sort(d), ppoints(301), xlab ="DM al cuadrado ordenada", ylab = "Probabilidad Acumulada")
+Q <- qchisq(p = 0.975, df = 3)
+abline(v=Q, col = "red")
+```
+```{r}
+install.packages("XQuartz")
+```
+
+```{r}
+install.packages("rgl")
+```
+
+```{r}
+library(rgl)
+plot3d(dat, col = c(rep(1,300), 2))
+```
+
+# Analisis con datos reales
+--------------------------------
+# Varias variables  : solo porque son quantitativas
+
+```{r}
+
+#-------------------------------------------------------#
+#  Ejemplo: Empleados de Midwestern bank (1965)         #
+# ------------------------------------------------------#
+
+dat <- Bank[c(2,4,5,6,7,8)]
+d <- mahalanobis(dat, colMeans(dat), cov(dat))
+barplot(d, main="Mahalanobis")
+
+```
+
+```{r}
+which.max(d)
+
+```
+
+```{r}
+# Buscamos al empleado que es el potencial outlier
+
+Bank[56,]
+```
+
+```{r}
+# Se pone 433 porque es la cantidad de datos
+# Se pone 6 porque tengo esa cantdad de variable
+# QQ-plot:
+par(mfrow=c(1,1))
+qqplot(d, qchisq(ppoints(433), df = 5),
+       main = expression("Q-Q plot for" ~~ {chi^2}[nu == 5]))
+
+
+```
+# Grafica de la ojiva
+```{r}
+plot(sort(d), ppoints(433), xlab ="DM al cuadrado ordenada", ylab = "Probabilidad Acumulada")
+Q <- qchisq(p = 0.975, df = 5)
+abline(v=Q, col = "red")
+```
+Si hubiesen varios outlier , afectarian a las media  y a los covarianzas, por lo tanto se podrian afectar, por lo tanto fallaria para estaos casos
+
+# Estimadores robustos
+Debemos usar una estimaciones robustas:
+- El estimador de elipsoide de volumen minimo : MVE
+- El estimador de determinante de covarianza minima : MCD
+
+Es mas robusto pero es mas lento de ser procesado
+
+# Cuando debemos usar los estimadores robustos
+
+- Efecto de enmascaramiento : Ocurre cuando despues de eliminar un outlier, otra observacion se vuelve outlier.
+
+- Efecto de cubrimiento : Ocurre cuando despues de eliminar un outlier, otro outlier se vuelve en una buena observacion.
+
+"Cuando sucede esto, la distancia tradicional de Mahalanobis ya no funciona y hay que usar un estimador robusto"
+
+# Libreria mvoutlier
+Se usa para usar estimadores robusto
+
+```{r}
+install.packages("mvoutlier")
+```
+
+
+```{r}
+#--------------------------------------------------------------------------------------- #
+#  Ejemplo: Estimadores robustos                                                       #
+# Ver Filzmoser et al. (2005) Multivariate outlier detection in exploration geochemistry #
+#----------------------------------------------------------------------------------------#
+
+library(mvoutlier)
+aq.plot(dat)
+chisq.plot(dat)
+uni.plot(dat,symb = TRUE)
+```
+Se usa en la OJIVA la distancia de Mahanomis al cuadrado
+
+Las que aparecen en rojo 
+
+CRITICA : 
+ - No se identifica el centro claramente
+ - Algunas veces el centro no es el valor adecuado para tenerlo de refencia para calcular el outlier.
+    
+     Supongamos que deseamos ver los diagramas de dispersion
+     
+      
+          |                 . .
+          |                 .. .
+          |            . ..
+          |         ....
+          |       . .               Se puede calcular el valor del centro adecuadamente
+          |    . .  . 
+          |    .  . 
+          |  .  .
+          | . 
+          |----------------------------
+          
+            
+
+
+          |      ....           . .
+          |     ...            .. .
+          |        ..      . ..
+          |                 ....
+          |       . .               Se puede calcular el valor del centro usando el concepto
+          |    . .  .     ....      de vencidad.
+          |    .  .     . ...
+          |  .  .        ...
+          | .               ..
+          |----------------------------
+           
+ 
+ 
+#########################################################
+#  Outliers Multivariados (Otros m?todos)               #
+#########################################################
+
+# Leer los papers para ver cual es el criterio 
+
+```{r}
+# PCOut Method (robust principal components - m?s adecuado para grandes dimensiones)
+# Ver Filzmoser et al. (2008) Outlier identification in high dimensions
+outlier=pcout(dat, makeplot = TRUE)
+outlier 
+
+```
+```{r}
+# outlier$wfinal : me devuelve el valor de los posibles potenciales que pueden ser outlier
+Bank[order(outlier$wfinal,decreasing=F)[1:10],]
+```
+Sale los  posible outlier 
+
+```{r}
+# Sign Method
+outlier1=sign2(dat)
+outlier1
+Bank[order(outlier1$x.dist,decreasing=T)[1:10],]
+```
+Sale como posible outlier la observacion 56
+```{r}
+# Densidad Local
+library(DMwR)
+lof=lofactor(dat,10)
+lof
+Bank[order(lof,decreasing=T)[1:10],]
+```
+Sale como posible outlier la observacion 56

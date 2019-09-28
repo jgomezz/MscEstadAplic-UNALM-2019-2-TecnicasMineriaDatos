@@ -1,0 +1,162 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+#########################################################
+#  An?lisis Multivariado de Valores Extremos            #
+#########################################################
+
+
+```{r}
+#-------------------------------------------------------#
+# Ejemplo: Outliers en dos dimensiones                  #
+#-------------------------------------------------------#
+
+load(file = "simpleExample.rda")
+#load(file.choose())
+head(dat)
+tail(dat)
+summary(dat)
+```
+
+
+```{r}
+par(mfrow=c(1,3))
+plot(dat, xlim = c(-5,5), ylim = c(-5,5))
+barplot(dat[,1], main="Valores de X")
+barplot(dat[,2], main="Valores de Y")
+par(mfrow=c(1,1))
+```
+Se usa un grafico de barras a pesar que son variables cualitativas. 
+El diagrama de dispersion solo es util hasta con 2 variables, es decir graficamente podemos hacer el analisis visualmente.
+
+```{r}
+par(mfrow=c(1,3))
+plot(dat, xlim = c(-5,5), ylim = c(-5,5))
+boxplot(dat[,1],main="Valores de X")
+boxplot(dat[,2],main="Valores de y")
+par(mfrow=c(1,1))
+```
+Se obseva un outlier en la primera grafica , aproximadamente en la posicion (-3,3)
+
+# Cuando tengo mas de 2 variables ya no se puede buscar los outliers visualmente
+
+```{r}
+# Distancia de Mahalanobis
+cm <- colMeans(dat)
+S <- cov(dat)
+dm <- sqrt(apply(dat, 1, function(x) t(x-cm) %*% solve(S) %*% (x-cm)))
+
+# Matriz de varianza covarianza
+S
+```
+```{r}
+# Distancia de Mahalanobis cuadrada
+d <- dm^2
+
+# Se visualiza el valor calculado
+d
+```
+La distancia que tiene el primer dato con su centroide es:
+
+   [1]  1.81443428
+
+Se observa que la ultima observacion tiene un potencial de ser un outlier en comparacion con los otros datos
+
+   [301] 47.95357800
+
+```{r}
+# Se obtine el valro de mahalanobis al cuadrado
+d <- mahalanobis(dat, cm, S)
+d
+```
+
+
+
+```{r}
+barplot(d, main="Mahalanobis")
+which.max(d)
+```
+Visualmente se observa que hay la ultima vertical tiene el mayor valor y puede ser un outlier.
+
+```{r}
+plot(dat, xlim = c(-5,5), ylim = c(-5,5))
+identify(dat[,1], dat[,2],round(d,1)) # permite ver las observaciones en el grafico con la tecla ESC para verlo
+```
+Si la distribucion viniera de una CHi2 con 2 grado de libertad entonces podria construir una grafica de Cuantil vs Cuantil
+
+
+          |                 . .
+          |                 .. .
+          |            . ..
+          |         ....
+Cuantiles |       . .               Se realiza una linea recta
+Teoricos  |    . .  . 
+          |    .  . 
+          |  .  .
+          | . 
+          |----------------------------
+          
+            Cuantiles empiricas
+
+Si se observa desviacion , entonces se puede ver que la grafica no venga de la distribucion
+
+
+```{r}
+
+# d : distancia de Mahalanobis
+# Se pone 301 
+
+#  QQ-plot:
+qqplot(d, qchisq(ppoints(301), df = 2),
+       main = expression("Q-Q plot para" ~~ {chi^2}[nu == 2]))
+```
+Se observa que hay un potencial outlier
+
+
+```{r}
+# valor empirico de los quantiles
+head(ppoints(301))  # Se usa 301 porque tengo esa cantidad de cortes
+
+# ppoints : solo te da el quantil
+```
+El primer quantil 0.001661130 es . Significa que supero en 0.1% a los otros valores
+
+
+```{r}
+head(sort(d))
+```
+
+```{r}
+qchisq(0.01314332,2) # calculamos el valor teorico con 2 grados de libertad
+```
+Se observa que [1] 0.001661130 , se parece un poco a [1] 0.02646092
+
+
+```{r}
+# Ejemplo
+qnorm(0.1,12,2) # Calculo el quantil 0.1 para una media de 12 y std 2  
+```
+
+Es la nota que se esperaria para el quantil 0.1
+
+# Se grafica las ojivas
+
+```{r}
+plot(sort(d), ppoints(301), xlab ="DM al cuadrado ordenada", ylab = "Probabilidad Acumulada")
+Q <- qchisq(p = 0.975, df = 2)
+abline(v=Q, col = "red")
+```
+```{r}
+par(mfrow = c(1,1))
+plot(dat, xlim=c(-5,5), ylim=c(-5,5))
+points(dat[301,1],dat[301,2],col="red")
+```
+Se marca el potencial outlier 
+
+```{r}
+
+```
+
