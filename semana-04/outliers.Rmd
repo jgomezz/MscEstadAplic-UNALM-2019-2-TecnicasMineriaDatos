@@ -65,3 +65,49 @@ levels(Bank$JOBCAT)<- c(NA, "Oficinista", "Asistente", "Seguridad",
                         "Acad?mico", "Empleado", "Ejecutivo", "T?cnico" )
 ```
 
+# Se eliminan datos perdidos, porque no es parte de la revision de outlier
+```{r}
+Bank$SALBEG[Bank$SALBEG == 0] <- NA
+Bank$JOBTIME[Bank$JOBTIME == 0] <- NA
+Bank$AGE[Bank$AGE == 0] <- NA
+Bank$SALNOW[Bank$SALNOW == 0] <- NA
+Bank$EDLEVEL[Bank$EDLEVEL == 0] <- NA
+Bank$WORKEXP[Bank$WORKEXP == 0] <- NA
+
+summary(Bank)
+Bank <- na.omit(Bank)
+
+```
+
+```{r}
+# Cuando sobrebapa en 1.5 el rango intercuartilo de la caja
+# Box Plots
+#------------
+
+library(dplyr)  # me permite seleccionar datos
+
+library(ggplot2) # construir graficos mas vistosas
+
+# No me interesa saber que observacion es un outlier, lo que me interesa 
+# el nombre o identificacion del trabajador, es lo que hace esta funcion
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+}
+
+```
+```{r}
+p1 <- Bank %>%
+  mutate(outlier = ifelse(is_outlier(SALBEG), ID, as.numeric(NA))) %>%
+  ggplot(., aes(x = 1, y = SALBEG)) +
+  geom_boxplot(fill="lightblue") +
+  geom_text(aes(label = outlier), na.rm = TRUE, hjust = -0.3) +
+  theme_bw()
+
+
+
+```
+
+
+
+
+
