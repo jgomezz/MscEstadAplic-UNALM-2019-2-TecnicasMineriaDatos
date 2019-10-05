@@ -1,0 +1,167 @@
+---
+title: "Practica 01"
+output: html_notebook
+---
+
+```{r}
+install.packages("norm2")
+```
+
+
+```{r}
+library(norm2)
+data(flas)
+
+```
+```{r}
+flas$FLAS
+```
+
+# Pregunta 1 
+El conjunto de datos flas de la librería norm2 contiene datos de un estudio para evaluar la confiabilidad de la
+Escala de actitud de lenguaje extranjero, un instrumento para predecir el éxito en el estudio de idiomas
+extranjeros (Raymond y Roberts, 1983). El cuestionario se entregó a 279 estudiantes matriculados en cuatro
+cursos de idiomas diferentes (francés, alemán, español, ruso) en la Universidad Penn State. Este conjunto de
+datos incluye el puntaje FLAS, la calificación final en el curso y otras variables para predecir el logro. Para
+mayores detalles consultar la ayuda en R. Realice un diagnóstico de datos perdidos y responda:
+
+## (a) ¿Cuantas filas con valores perdidos hay en el conjunto de datos? 
+
+Para ver la cantidad  datos perdidos 
+```{r}
+fila.perdidas <- which(rowSums(is.na(flas))!=0)
+length(fila.perdidas)
+```
+## (a) ¿Qué porcentaje de todos los valores es? 
+```{r}
+(length(fila.perdidas)/dim(flas)[1]) * 100
+```
+El 37.63 % de filas son datos perdidos
+
+
+
+## (b) ¿Cuantos atributos (columnas) hay sin ningún dato perdido?
+
+```{r}
+which(colSums(is.na(flas))!=0)
+```
+En total hay 10 atributos que tienen datos perdidos
+
+## (b)  Describa la cantidad y el porcentaje de datos
+
+```{r}
+colmiss=c(4,5,6,8,9,10,11,12,13,14)
+per.miss.col=100*colSums(is.na(flas[,colmiss]))/dim(flas)[1]
+per.miss.col
+```
+Se ve que la columna AGE tiene 3.94%
+Se ve que la columna PRI tiene 3.94%
+Se ve que la columna SEX tiene 0.36%
+Se ve que la columna FLAS tiene 17.56%
+Se ve que la columna SATV tiene 12.19%
+Se ve que la columna SATM tiene 12.194%
+Se ve que la columna ENG tiene 13.264%
+Se ve que la columna HGPA tiene 0.36%
+Se ve que la columna CGPA tiene 12.194%
+Se ve que la columna GRD tiene 16.84%
+
+## (c) ¿Cuantos patrones de datos perdidos distintos presenta el conjunto de datos? 
+```{r}
+library(ranger)
+library(laeken)
+library(robustbase)
+library(VIM)
+
+# Aggregation plot
+a=aggr(flas,numbers=T)
+```
+
+
+```{r}
+summary(a)
+```
+
+## (c)¿Cuál es el que ocurre con mayor frecuencia? Justifique su respuesta usando una gráfica apropiada
+```{r}
+aggr(flas,numbers=T, sortComb=TRUE, sortVar=TRUE, only.miss=TRUE)
+
+```
+(c) ¿Cuantos patrones de datos perdidos distintos presenta el conjunto de datos? 
+
+Se observa que hay filas que tienen 1,2,3,4,5,6 y 8 atributos faltante 
+Tengo un 627% de filas completas
+
+(c)¿Cuál es el que ocurre con mayor frecuencia? Justifique su respuesta usando una gráfica apropiada
+
+Tengo un 18% que tiene datos faltantes para la variable FLAS
+Tengo un 17% que tiene datos faltantes para la variable GRD
+Tengo un 13% que tiene datos faltantes para la variable ENG
+Tengo un 12.5% que tiene datos faltantes para la variable SATV
+Tengo un 12.5% que tiene datos faltantes para la variable SATM
+Tengo un 12.5% que tiene datos faltantes para la variable CGPA
+Tengo un 4% que tiene datos faltantes para la variable AGRE
+Tengo un 4% que tiene datos faltantes para la variable PRI
+Tengo un 0.5% que tiene datos faltantes para la variable SEX
+Tengo un 0.5% que tiene datos faltantes para la variable HGPA
+
+## (d) ¿Es posible identificar algún patrón de datos perdidos? (por ejemplo, la perdida de información en alguna variable parece estar asociada a otra.) Justifique su respuesta 
+```{r}
+# Matrix plot
+matrixplot(flas)
+```
+
+Tengo un 18% que tiene datos faltantes para la variable FLAS
+Tengo un 17% que tiene datos faltantes para la variable GRD
+Tengo un 13% que tiene datos faltantes para la variable ENG
+Tengo un 12.5% que tiene datos faltantes para la variable SATV
+Tengo un 12.5% que tiene datos faltantes para la variable SATM
+Tengo un 12.5% que tiene datos faltantes para la variable CGPA
+Tengo un 4% que tiene datos faltantes para la variable AGRE
+Tengo un 4% que tiene datos faltantes para la variable PRI
+
+AGE   PRI  SEX  FLAS  SATV SATM   ENG  HGPA CGPA  GRD 
+   4    5    6    8    9    10     11   12    13   14
+   
+
+## (e) Se desea realizar la imputación de la variable FLAS. Identifique a qué tipo de mecanismo se puede atribuir la presencia de datos perdidos. Justifique su respuesta usando técnicas de visualización y la prueba estadísticat. Luego, sobre la base del mecanismo identificado, realice la imputación de los datos perdidos
+
+```{r}
+#Parallel boxplots
+VIM::pbox(flas[4:15,], pos=8)  # la varable de salida es el FLAS
+```
+
+Se observa que cuando las notas son bajas, se tiene datos perdidos en la matricula del  curso de Ingles, podria ser un mecanismo de MAR
+En cambio hay datos perdidos en la matricula del idioma Aleman sin importar la nota obtenida, esto podria ser un mecanismo MCAR
+
+
+```{r}
+marginplot(flas[,c("ENG", "GRD")])
+
+```
+# Supuestos para hacer la prueba de medias
+- Los valores deben ser obtenidos datos aleatorios
+- Deben venir de una distribucion normal
+```{r}
+# Prueba t de medias
+t.test(FLAS ~ is.na(ENG), data=flas)
+
+```
+Como el p es casi cero, se tiene evidencia para descartar la hipotesis nula , por lo tanto podemos asumir que la medias son distintas y se acepta el mecanismo MAR
+
+
+```{r}
+# Prueba t de medias
+t.test(FLAS ~ is.na(GRD), data=flas)
+```
+
+```{r}
+library(simputation)
+flas.i <- impute_lm(flas, ENG + GRD ~ 1)
+flas.j <- impute_lm(flas.i, FLAS ~ ENG + GRD, add_residual = "normal")
+flas[c(7,8,12),]$FLAS
+flas.j[c(7,8,12),]$FLAS
+#flas.i[c(108:110, 463,551:552),]
+```
+
+
+        
