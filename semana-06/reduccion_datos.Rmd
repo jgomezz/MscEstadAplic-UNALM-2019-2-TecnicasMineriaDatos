@@ -1,0 +1,91 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+#################
+# Reduccion de Datos
+
+Reducir la base de datos , pero manteniendo la informacion, 
+
+Porque quieres reducir? porque entre tantas variables es dificil encontrar patrones
+
+Las mas conocidas
+ - Agregacion del cubo de datos
+ - Discretizacion     *** (solo se toca este tema)
+ - Reduccion de dimensionalidad  ( se ve en multivariados)
+
+¿Que es Discretizacion ?
+Transforma una var. cualitativa (ordinal) en cuantitativa
+Las variables categoricas tienes distribucion discretas
+
+Motivos:
+ -Cuando quiero usar la variable categorica para realizar clasificar.
+ - quiero usar un modelo con variables discretas, por ejemplo el algoritmo Naive Bayes, en arboles de regresion ( si ingresas una variable cualitativa, lo discretiza) 
+ - Cuando mi finalidad es realizar predicciones
+ 
+ 
+Algoritmo de discretizacion :
+
+- 1ro : Ordenar los datos de mayor a menor
+- 2do : Se definen intervalos
+- 3ro : Se asignan valores a los intervalos
+
+ X | $Xô$ |
+ ----------
+ 15 | 1  |
+ 20 | 1  |
+ 24 | 1  |
+ 32 | 2  |
+ 50 | 2  |
+ 80 | 3  |
+ 89 | 3  |
+ 90 | 4  |
+ 97 | 4  |
+ 
+ Las discretizacion puede ser de top-down o bottom-up 
+ 
+ Metodo top - down :
+ 
+ 
+ 
+ Metodo bottom - up :
+ 
+ Cada dato esta en un intervalo
+ 
+ 
+ 
+ Discretizacion dinamica : Cuando es realizada por un algoritmo de un software
+ 
+ Discretizacion estatica : Cuando al discretizacion no se usa un mecanismo u algoritmo
+ 
+ 
+Discretizacion
+--------------
+
+Metodos No Supervisados : Solo tengo en cuenta los datos , por ejemplo los auartiles
+ 
+ 
+Metodos Supervisados : Cuando se tiene una clase que se usa para realizar un mecanismo de clasificacion.  
+ 
+         "class" =  clase    
+            | 
+            |     D3
+ X | $Xô$ | Y  | X
+ ------------------
+ 15 | 1  | No
+ 20 | 1  | No
+ 24 | 1  | No
+ 32 | 2  | No
+ 50 | 2  | No
+ 80 | 3  | No
+ 89 | 3  | No
+ 90 | 4  | No
+ 97 | 4  | No
+ 
+
+```{r}
+
+plot(cars)
+
+```
+
