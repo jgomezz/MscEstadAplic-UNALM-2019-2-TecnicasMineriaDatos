@@ -1,6 +1,0 @@
-"0","# Barras Componentes"
-"0","par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE) #Adicionar espacio extra"
-"0","barplot(t(tabla2),col=2:4,"
-"0","        xlab=""Grupo Etario"","
-"0","        ylab=""Proporci?n de Clientes"","
-"0","        main=""Distribuci?n del historial de compra seg?n grupo etario"")"

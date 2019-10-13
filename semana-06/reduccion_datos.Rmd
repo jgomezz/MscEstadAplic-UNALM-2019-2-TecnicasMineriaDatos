@@ -72,20 +72,301 @@ Metodos Supervisados : Cuando se tiene una clase que se usa para realizar un mec
             |     D3
  X | $Xô$ | Y  | X
  ------------------
- 15 | 1  | No
- 20 | 1  | No
- 24 | 1  | No
- 32 | 2  | No
- 50 | 2  | No
- 80 | 3  | No
- 89 | 3  | No
- 90 | 4  | No
- 97 | 4  | No
+ 15 | 1  | No | 1 
+ 20 | 1  | Si | 1
+ 24 | 1  | No | 1
+ -----------------
+ 32 | 2  | No | 2
+ 50 | 2  | No | 2
+ -----------------
+ 80 | 3  | Si | 3
+ 89 | 3  | Si | 3
+ -----------------
+ 90 | 4  | Si | 3
+ 97 | 4  | Si | 3
  
+ 
+#########################################################
+#  Discretizaci?n                                       #
+#########################################################
+
+
+# ------------------------------------------------------------------------#
+# Ejemplo: Cr?ditos de  Banco Alem?n                                      #
+#-------------------------------------------------------------------------#
 
 ```{r}
+library(Fahrmeir)
+data(credit)
+help(credit)
 
-plot(cars)
+head(credit)
+hist(credit$DM)
 
 ```
+
+```{r}
+install.packages("arules")
+```
+# Discretizacion con intervalos de igual amplitud
+
+Forma de determinar la amplitud de un intervalo:
+
+- Determinar la amplitud de cada intervalo en forma arbitraria ( regla de negocio)
+- Usar una regla estadistica :
+       - Formula de Sturges : no tiene en cuenta la diversidad de los datos, solo la cantidad de datos
+       - Formula de Friedman - Diaconis :
+       - Formula de Scott :
+
+
+Usa la desviacion estandar
+```{r warning=false}
+library(arules)
+nbins<-nclass.scott(credit$DM) # Usando Scott
+nbins
+```
+No considera la 
+```{r warning=false}
+nbins<-nclass.Sturges(credit$DM) #Usando Sturges
+nbins
+```
+Usa un rango intercuartilico
+```{r warning=false}
+nbins<-nclass.FD(credit$DM) # Usando Friedman-Diaconis
+nbins
+```
+Nos quedamos con Scott ( n = 19)
+```{r}
+credit$DM_dia<-discretize(credit$DM,method="interval", breaks= nbins) 
+table(credit$DM_dia)
+```
+
+--------------------------------
+# Intervalo de Igual Frecuencia
+
+El numero de datos tiene que ser multiplo del numero de intervalos
+
+```{r}
+#Discretizaci?n con intervalos de igual frecuencia
+credit$DM_dif<-discretize(credit$DM, method="frequency", breaks= 10)
+table(credit$DM_dif)
+```
+Se puede observar que la cantidad de frecuencias en cada intervalo es casi lo mismo
+
+--------------------------------
+# Discretizacion por clusters (K-Medias)
+
+```{r}
+#Discretizaci?n por clusters (K-Medias)
+credit$DM_cl<-discretize(credit$DM, method = "cluster", breaks = 5)  #  5 centros de intervalos
+table(credit$DM_cl)
+```
+
+# DISCRETIZACION POR ENTROPIA
+
+         "class" =  clase    
+            | 
+            |     D3
+ X | $Xô$ | Y  | X
+ ------------------
+ 15 | 1  | No | 1 
+ 20 | 1  | Si | 1
+ 24 | 1  | No | 1
+ -----------------
+ 32 | 2  | No | 2
+ 50 | 2  | No | 2
+ -----------------
+ 80 | 3  | Si | 3
+ 89 | 3  | Si | 3
+ -----------------
+ 90 | 4  | Si | 3
+ 97 | 4  | Si | 3
+
+La probabilidad de los 3 ultimos intervalos es mejor que el 1er intervalo
+
+En los intervalos cuando la probabilidad es 50 % es malo
+
+Eventos mutuamente excluyentes : son eventos que no pueden suceder al mismo tiempo.
+
+La entropia , mide la impureza que tengo para medir la clasificacion de ciertas informacion
+
+entropia 1 : máxima informacion posible ( el conjunto esta muy mezclado)
+entropia 0 : mínima informacion posible ( el conjunto de datos es puro)
+
+--------------------------------------------
+Lamina 94/1117 : n = cantidad de categorias
+--------------------------------------------
+Algoritmo :
+
+1.- Entropia de Y sin discretizar de X . Todos los datos de X estan en un solo intervalo
+2.- Divido X en 2 intervalos
+3.- Calcular la entropia de 
+4.- Escogo el punto de corte de modo que reduzca en mayor cantidad la entropia. Ganar la informacion.
+5.- Debo definir un criterio de parada.
+     - Una medida de ganancia propia o juicio de expertos. Ejem: Si gano 5% detengo el proceso . 
+     - Usar una regla que me permite ganar la mayor cantidad de informacion , $ Ent(S) - e(T,S) > \delta $ 
+     
+           $$ \delta =  \frac{log(N-1)}{N} + \frac{DELTA(T,S)}{N}$$
+
+Ejemplo
+
+S1= (0,Y), (4,Y), (12,Y) y S2= (16,N), (16,N), (18,Y), (24,N), (26,N), (28,N)
+
+X  |  Y
+---------      ---
+0  | yes         |
+--------         |
+4  | yes         |
+---------        |
+12 | yes         |
+---------        |
+16 | no          |
+---------        |
+16 | no          |  (S)
+---------        |
+18 | yes         |
+---------        |
+24 | no          |
+---------        |
+26 | no          |
+---------        |
+28 | no          |
+              ----
+
+
+1er paso :
+----------
+
+- Entropia de Y sin discretizar de X . Todos los datos de X estan en un solo intervalo
+
+5 veces "yes"
+4 veces "no"
+
+$$ E(S) = - [ \frac{4}{9}*log2(\frac{4}{9}) + \frac{5}{9}*log2(\frac{5}{9})]  $$
+```{r}
+EntropiaInicial = - (4/9*log2(4/9) + 5/9*log2(5/9))
+EntropiaInicial
+```
+
+2do paso :
+----------
+-  Divido X en 2 intervalos  . Se identifica los puntos de cortes
+        
+        X  |  Y
+        ---------      ---
+        0  | yes         |
+T1=2    --------         |          
+        4  | yes         |
+T2=8    --------         |           S1
+        12 | yes         |
+T3=14   --------         |      
+        16 | no          |
+        --------         |         |
+        16 | no          |  (S)    |
+T4=17   --------         |       ---
+        18 | yes         |
+T5=21   --------         |      
+        24 | no          |
+T6=25   --------         |           S2
+        26 | no          |
+T7=27   --------         |      
+        28 | no          |
+                      ----
+
+
+Se escoge T4 = 17 como punto de corte 
+
+Calcular cuanto vale la entropia para el primer intervalo S1
+
+3 veces "yes"
+2 veces "no"
+
+
+$$ E(S1) = - [ \frac{3}{5}*log2(\frac{3}{5}) + \frac{2}{5}*log2(\frac{2}{5})]  $$
+```{r}
+entropia_S1 = - (3/5*log2(3/5) + 2/5*log2(2/5))
+entropia_S1
+```
+
+
+Calcular cuanto vale la entropia para el primer intervalo S2
+
+1 veces "yes"
+4 veces "no"
+
+$$ E(S2) = - [ \frac{1}{4}*log2(\frac{1}{4}) + \frac{3}{4}*log2(\frac{3}{4})]  $$
+```{r}
+entropia_S2 = - (1/4*log2(1/4) + 3/4*log2(3/4))
+entropia_S2
+```
+
+La entropia de todo el sistema ( S1  +  S2) seria la media ponderada
+
+```{r}
+EntropiaFinalConIntervalos  = (5* entropia_S1 + 4*entropia_S2) /( 5 + 4)
+EntropiaFinalConIntervalos
+```
+
+La Ganancia final es la reduccion de la entropia
+
+$$
+        Gain(S, T4) = Entropia Inicial - Entropia Final con Intervalos
+$$
+```{r}
+Gain_S_T4 = EntropiaInicial - EntropiaFinalConIntervalos
+Gain_S_T4
+```
+
+Se gana el 9.12 % de entropia
+
+NOTA : En caso se desea usar mas de 2 intervalos, se podria usar la pruebas de Homogenidad de proporciones : Realizar la comparacion entre varios intervalos
+     
+
+
+# Discretizacion
+
+```{r}
+install.packages("discretization")
+```
+
+
+```{r}
+#Discretizacion por entrop?a
+library(discretization)
+
+# primero pasar las columnas que quieras discretizar, seguido de las  clases
+DM_entropia = mdlp(data = credit[,c("DM","Y")])
+```
+
+```{r}
+DM_entropia$cutp  # se obtiene el punto de corte
+```
+Se obtiene un punto de corte , por lo tanto se tiene 2 intervalos
+
+```{r}
+DM_entropia$Disc.data  # El dataset discretizado mas la columna de clases
+```
+
+```{r}
+DM_entropia$cutp
+```
+
+
+```{r}
+head(DM_entropia$Disc.data, n = 15)
+```
+
+
+```{r}
+table(DM_entropia$Disc.data)
+```
+```{r}
+credit$DM_dentr <- DM_entropia$Disc.data[,1] # Selecciono los datos discretizados
+head(credit)
+```
+```{r}
+table(credit$DM_dentr)
+```
+
+
 

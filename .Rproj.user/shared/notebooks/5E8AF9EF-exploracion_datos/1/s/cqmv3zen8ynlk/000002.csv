@@ -1,7 +1,0 @@
-"0","# Visualizaci?n de la Distribuci?n de la Variable"
-"0","# ------------------------------------------------"
-"0","#Gr?fico de Varas"
-"0","plot(pi, type=""h"", lwd=2,"
-"0","     xlab=""N?mero de hijos"","
-"0","     ylab=""Porcentaje de clientes"","
-"0","     main=""Distribuci?n del n?mero de hijos por cliente"")"

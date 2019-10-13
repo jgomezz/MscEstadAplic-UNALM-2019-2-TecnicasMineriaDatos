@@ -1,6 +1,0 @@
-"0","#Usando ggplot2"
-"0","ggplot(data = na.omit(DMark), aes(x = Edad, y = ..count.., fill = Historial)) +"
-"0","  geom_bar(position = ""fill"") +"
-"0","  labs(y = ""% de clientes"", title = ""Distribuci?n del historial de compra seg?n grupo etario"") +"
-"0","  theme_bw() +"
-"0","  theme(legend.position = ""bottom"")"

@@ -1,0 +1,115 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#-------------------------------------------------------#
+#  Ejemplo: Empleados de Midwestern bank (1965)         #
+# ------------------------------------------------------#
+# ID = C?digo del empleado                              #
+# SALBEG = Salario inicial                              #
+# GENDER = G?nero                                       #
+# JOBTIME = Meses en el  trabajo                        #
+# AGE = Edad (a?os)                                     #
+# SALNOW = Salario actual                               #
+# EDLEVEL = Experiencia acad?mica (a?os)                #
+# WORKEXP = Experiencia laboral previa (a?os)           #
+# JOBCAT = Categor?a laboral                            #
+# MINORITY = Pertenece a minor?a racial                 #
+#-------------------------------------------------------#
+
+```{r}
+
+Bank <- read.delim("BwBankTab.dat" )
+head(Bank)
+
+# Asignar etiquetas y valores perdidos
+Bank$GENDER <- as.factor(Bank$GENDER); levels(Bank$GENDER)<- c("Hombre","Mujer",NA)
+Bank$MINORITY <- as.factor(Bank$MINORITY); levels(Bank$MINORITY)<- c("Blanco","No blanco",NA)
+Bank$JOBCAT <- as.factor(Bank$JOBCAT)
+levels(Bank$JOBCAT)<- c(NA, "Oficinista", "Asistente", "Seguridad", 
+                        "Acad?mico", "Empleado", "Ejecutivo", "T?cnico" )
+Bank$SALBEG[Bank$SALBEG == 0] <- NA
+Bank$JOBTIME[Bank$JOBTIME == 0] <- NA
+Bank$AGE[Bank$AGE == 0] <- NA
+Bank$SALNOW[Bank$SALNOW == 0] <- NA
+Bank$EDLEVEL[Bank$EDLEVEL == 0] <- NA
+Bank$WORKEXP[Bank$WORKEXP == 0] <- NA
+
+summary(Bank)
+Bank <- na.omit(Bank)
+```
+
+
+
+```{r}
+#--------------------------------------------------------------------------------------- #
+#  Ejemplo: Estimadores robustos                                                       #
+# Ver Filzmoser et al. (2005) Multivariate outlier detection in exploration geochemistry #
+#----------------------------------------------------------------------------------------#
+
+library(mvoutlier)
+aq.plot(dat)
+chisq.plot(dat)
+uni.plot(dat,symb = TRUE)
+
+```
+Se observa que las 2 observaciones que se encuentran mas alejadas son las alejadas a la  izquierda ( observaciones 56 y 234)
+
+Lo que estan pintados de rojo, son los posibles outlier basado en la distancia de Mahalanobis
+
+```{r}
+Bank[c(56,234),]
+```
+
+
+#########################################################
+#  Outliers Multivariados (Otros m?todos)               #
+#########################################################
+
+# Metodo de componentes principales
+```{r}
+# PCOut Method (robust principal components - m?s adecuado para grandes dimensiones)
+# Ver Filzmoser et al. (2008) Outlier identification in high dimensions
+outlier=pcout(dat, makeplot = TRUE) # 1er argumento = nombre del objetos 
+outlier
+Bank[order(outlier$wfinal,decreasing=F)[1:10],] # ordena los valores decrecientes y se muestra los 10 primeros, ( estos son los posibles outlier)
+```
+Ya no identifica quien es un outlier que ya usa el parametro final  $wfinal , a partir de que una distancia que podria ser un outlier
+
+# Metodo del signo
+```{r}
+# Sign Method
+outlier1=sign2(dat)
+outlier1
+Bank[order(outlier1$x.dist,decreasing=T)[1:10],] # Ordeno las 10 observaciones en forma decreciente 
+```
+
+# Metodo de densidades locales . Tiene que colocar el tamaño de la vencidad
+```{r}
+# Densidad Local
+library(DMwR)
+lof=lofactor(dat,10) # se coloca el tamaño de vencidad 10
+lof
+Bank[order(lof,decreasing=T)[1:10],]
+```
+
+# Netodo de conglomerados unitariodos, se agrupa en conglomerados y si esta solo , es posible que sea un outlier
+El problema de k-media, es que se trabaja con un valor central y se ven afectado con los outlier. 
+PAM , usa un medoide, ya como centroide, de esa forma no se ve afectado por los outlier.
+
+```{r}
+# Clusters (PAM)
+library(cluster)
+pamBank=pam(dat,25,stand=T)  # se aplica en 25 grupos
+pamBank$clusinfo
+Bank[pamBank$clustering==19,]
+```
+
+El congloremado 19 solo tiene un elemento, podria ser un outlier.
+Se busca el conglomerado y se identifica la observacion 56
+
+
+
+
+

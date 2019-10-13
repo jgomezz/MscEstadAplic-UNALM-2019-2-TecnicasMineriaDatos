@@ -1,5 +1,0 @@
-"0","# Grafico de Barras"
-"0","# -------------------"
-"0","barplot(pi, main=""Distribuci?n de las edades de los clientes"", "
-"0","        xlab=""Grupo Etario"", col = 1,"
-"0","        ylab=""Porcentaje de Clientes"")"

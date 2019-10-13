@@ -38,6 +38,11 @@ barplot(d, main="Mahalanobis")
 which.max(d)
 
 ```
+```{r}
+str(d)
+```
+
+
 En la grafica de la distancia de Mahalanobis se puede apreciar el potencial outlier
 ```{r}
 # QQ-plot:

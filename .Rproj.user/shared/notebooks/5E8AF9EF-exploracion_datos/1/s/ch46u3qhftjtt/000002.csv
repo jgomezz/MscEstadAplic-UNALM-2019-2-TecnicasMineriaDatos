@@ -1,7 +1,0 @@
-"0","#Usando ggplot2"
-"0","df <- as.data.frame(pi)"
-"0","ggplot(df, aes(x=Var1, y=Freq)) +"
-"0","  geom_segment( aes(x=Var1, xend=Var1, y=0, yend=Freq)) +"
-"0","  geom_point( size=5, color=""red"", fill=alpha(""orange"", 0.3), alpha=0.7, shape=21, stroke=2) +"
-"0","  labs(x = ""# de hijos"", y = ""% de clientes"", title = ""Distribuci?n del n?mero de hijos por cliente"") "
-"0",""

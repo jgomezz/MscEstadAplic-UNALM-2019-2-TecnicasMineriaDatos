@@ -1,6 +1,0 @@
-"0",""
-"0","library(vcd)"
-"2","Loading required package: grid
-"
-"0","mosaicplot(~ Edad+Historial, data = DMark, color = 2:4, "
-"0","           main=""Distribuci?n del historial de compra seg?n grupo etario"")"
