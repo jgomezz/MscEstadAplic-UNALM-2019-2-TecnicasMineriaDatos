@@ -292,7 +292,7 @@ entropia_S1
 Calcular cuanto vale la entropia para el primer intervalo S2
 
 1 veces "yes"
-4 veces "no"
+3 veces "no"
 
 $$ E(S2) = - [ \frac{1}{4}*log2(\frac{1}{4}) + \frac{3}{4}*log2(\frac{3}{4})]  $$
 ```{r}
@@ -328,15 +328,22 @@ NOTA : En caso se desea usar mas de 2 intervalos, se podria usar la pruebas de H
 ```{r}
 install.packages("discretization")
 ```
-
-
 ```{r}
-#Discretizacion por entrop?a
+#Discretizacion por entropia
 library(discretization)
 
-# primero pasar las columnas que quieras discretizar, seguido de las  clases
+# primero pasar las columnas que quieras discretizar, seguido de las  clases 
+# Criterio de parada, solo se acepta un parametro
+# se coloca los atributos que se van a discretizar y 
+# al final las clases 
 DM_entropia = mdlp(data = credit[,c("DM","Y")])
 ```
+
+```{r}
+str(DM_entropia)
+```
+$cutp : punto de corte, los valores que determinar los puntos de corte del intervalo
+$Disc.data : base de datos discretizadas
 
 ```{r}
 DM_entropia$cutp  # se obtiene el punto de corte
@@ -344,14 +351,12 @@ DM_entropia$cutp  # se obtiene el punto de corte
 Se obtiene un punto de corte , por lo tanto se tiene 2 intervalos
 
 ```{r}
-DM_entropia$Disc.data  # El dataset discretizado mas la columna de clases
+DM_entropia$Disc.data  # El dataset (base de datos) discretizado mas la columna de clases
 ```
 
 ```{r}
 DM_entropia$cutp
 ```
-
-
 ```{r}
 head(DM_entropia$Disc.data, n = 15)
 ```
@@ -361,12 +366,101 @@ head(DM_entropia$Disc.data, n = 15)
 table(DM_entropia$Disc.data)
 ```
 ```{r}
+
+# Se le agrega una columna para agregar el valor de la variable discretizada.
 credit$DM_dentr <- DM_entropia$Disc.data[,1] # Selecciono los datos discretizados
 head(credit)
 ```
+
 ```{r}
 table(credit$DM_dentr)
 ```
 
+# Discretizacion con chiMerge
+
+Este metodo no trabaja con entropia, evalua las distribuciones que tiene a nivel de clases , si los intervalos deben permanecer juntos o separados
+
+Trabaja con las observaciones por intervalos
+
+Se debe hacer una prueba de $Chi^2$ , 
+
+            Tabla de Contigencia
+            
+                 Clase 1    Clase 2      Total
+----------------------------------------------
+Intervalo I   
+----------------------------------------------
+Intervalo II
+----------------------------------------------
+
+----------------------------------------------
+
+Cada intervalo tiene un datos, se parte de esta premmisa:
+
+Supuesto :  La distribucion debe ser $Chi^2$ y deba tener 5 datos, 
+En una prueba de homogenidad , la prueba es 
+
+$H_0$: Que la distribucion de la variable es estudio es homogenea dentro de cada poblacion o subpoblacion que se esta estudiando.
+
+$H_0$: La variable Y tiene una misma distribucion en ambos intervalos
+$H_1$: En unos de los intervalos la variable Y no tiene la misma distribucion en ambos intervalos.
 
 
+Si se rechaza H0 : --> Los intervalos siguen separados.
+Si se rechaza H1 : --> Los intervalos deben unirse.
+
+Es una prueba aproximada, no debemos ser tan estrictos con los valores de significancia
+
+
+```{r}
+# Igual que el ejcrtito anteropr
+# El alpha es el valor de significancia
+DM_chim = chiM(data = credit[,c("DM","Y")],alpha = 0.005)
+```
+
+
+```{r}
+DM_chim$cutp
+```
+Hay 10 puntos de cortes, por lo tanto hay 11 intervalos.
+
+```{r}
+# Reduzco el nivel de significancia
+DM_chim = chiM(data = credit[,c("DM","Y")],alpha = 0.05)
+
+```
+
+# puntos de cortes
+```{r}
+DM_chim$cutp
+```
+Al aumentar el nivel de significancia aumentan los intervalos 
+
+```{r}
+head(DM_chim$Disc.data, n = 15)
+```
+
+```{r}
+table(DM_chim$Disc.data)
+```
+```{r}
+credit$DM_chim <- DM_chim$Disc.data[,1]
+table(credit$DM_chim)
+```
+
+
+```{r}
+head(credit, n = 15)
+```
+
+# Cuando hablamos de reduccion , existe 3 metodos:
+ - Agregaciion del icn
+ - Discretizacion        : reducir variabilidad
+ - Reduccion de la dimensionalidad     : La idea es no tener tantos atributos, debemos tener menos atrinutos pero que tengan la informacion de los atributos, ejemplo Componentes principales
+ 
+ Otras alternatvas :
+  - Criterio, No Supervisados y Supervisados
+  
+ 
+ 
+ 
