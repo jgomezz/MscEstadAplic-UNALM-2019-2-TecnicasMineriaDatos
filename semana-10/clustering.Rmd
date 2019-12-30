@@ -1,0 +1,418 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Definir la medidad de distancias
+
+Al final : tipos de distancias
+- numericas :
+- para datos mixtos :  Groover
+
+Hay formas de calcular distancias cuando solo hay datos categoricos
+
+Si tuviera datos no estructurados , tambien se puede calcular distancias , por ejemplo numero de palabras entre distintos corpus
+
+Tecnicas tradicionales de clustering
+
+Particionales:
+Este tipo de algoritmos , forma clustering con datos excluyentes, los k grupos para agrupar los objetos no pueden interceptarse y la union de todos los grupo me da todo la poblacion
+
+1.- definir el valor de k inicialmente. numero de conglomerados
+2.- El algoritmo escoge un valor 
+3.- Se usa la k medias
+
+Elegir los k centroides
+Cada objeto lo agrupa con el crentroide mas cercanos
+Se recalcula los centroides
+
+Si tengo outlier : transformar las variables pero se modifican los grupos, se usa la estandarizacion
+
+La convergencia
+
+
+```{r}
+# Instalaci?n de Paquetes
+install.packages(c("cluster","fpc","mclust","flexmix","prabclus","diptest",
+			"trimcluster","plyr","modeltools","mvtnorm","robustbase","kernlab"),
+                 dependencies = c("Depends"))
+#                 dependencies = c("Depends", "Suggests"))
+
+```
+#=======================================================#
+#  M?todos Particionales                                #
+#=======================================================#
+
+#########################################################
+#  K-Medias                                             #
+#########################################################
+
+#-------------------------------------------------------#
+# Simulacion                                            #
+#-------------------------------------------------------#
+
+
+k-medias : es no supervisados
+
+No se ha estandarizado los datos, 
+```{r}
+#Semilla para replicar resultados
+set.seed(007)
+
+
+x=cbind(rnorm(100,1000,100),
+        c(rnorm(50),rnorm(50,10,1)))
+```
+
+
+```{r}
+# se tiene visualmente 2 conglomerados
+plot(x,pch=16)
+```
+Se busca 2 conglomerados
+```{r}
+#k-means datos originales
+res=kmeans(x,2)
+plot(x,col=c("green","red")[res$cluster],pch=16)
+```
+Se observa que no es lo esperado , pero es tema es la distancia horizontal a la vertical, para poder hacer mejor debemos estandarizar
+
+```{r}
+# Estandarizaci?n
+xs=scale(x)
+plot(xs,pch=16)
+```
+
+```{r}
+#k-means datos estandarizados
+res=kmeans(xs,2)
+plot(x,col=c("green","red")[res$cluster],pch=16)
+```
+Se ve que estan los 2 conglomerados esperados, pero es porque sabiamos que buscabamos los 2 conglomerados
+
+#-------------------------------------------------------#
+# Ejemplo distritos                                     #
+#-------------------------------------------------------#
+
+```{r}
+library(foreign)
+distritos=read.spss("distritos.sav",use.value.labels=TRUE, max.value.labels=Inf, to.data.frame=TRUE)
+View(distritos)
+```
+Como se desea que la columna "distrito" aparezca con 
+
+```{r}
+colnames(distritos) <- tolower(colnames(distritos))
+nombres=distritos[,1]
+distritos=distritos[,-1]
+rownames(distritos)=nombres
+head(distritos)
+```
+
+Aplicamos la tecnica de k medias
+
+```{r}
+res<-kmeans(scale(distritos),2)
+res
+```
+Los centroidos
+-------------
+Cluster means:
+    ocu_vivi    pobpjov   sinelect    sinagua    pea1619    pocprin     peam15
+1  0.6635316  0.7536352  0.8957621  0.7981240  0.9978041  0.7677947  0.8420238
+2 -0.5238407 -0.5949751 -0.7071806 -0.6300979 -0.7877401 -0.6061537 -0.6647556
+
+Los conglomerados
+-----------------
+
+La suma de cuadrados dentro del conglomerados, es la medida de que tan bien estan agrupados
+como denominador tenemos la suma de cuadrados totales
+Es como una medida de ajuste,  55.1 %
+
+Se tiene los componentes:
+------------------------
+
+
+```{r}
+res$betweenss
+```
+
+```{r}
+# suma de cuadratos dentro del cluster
+res$withins
+```
+
+```{r}
+# suma total de los cuadratos 
+res$tot.withins
+```
+Si fuera 0, la distancia entre los centroides es cero
+
+```{r}
+# 
+res$totss
+```
+Porque elegir k = 2 ?, se debe revisar 
+
+
+Una manera intuititva , un conglomerados es mejor cuando tengo una menor suma de cuadrados dentro de los cluster, eso significa que la solucion es mejor. 
+
+Si al aumentar el numero de cluster, podria reductirse los datos en los conglomerados y la distancia ideal seria 0 cuando un conglomerado tenga un solo dato
+
+El tema es que cuando al aumentar el numero 
+
+
+
+#------------------------------------#
+# Determinar numero de conglomerados #
+#------------------------------------#
+
+```{r}
+# Suma de cuadrados dentro de clusters
+wss<-numeric()
+for(h in 2:10){
+  b<-kmeans(scale(distritos),h) # esta estandarizando
+  wss[h-1]<-b$tot.withinss  
+}
+
+plot(2:10,wss,type="b")
+```
+El algoritmo de k-medias no converge y puede generar varias soluciones
+
+```{r}
+# Suma de cuadrados dentro de clusters
+wss<-numeric()
+for(h in 2:10){
+  b<-kmeans(scale(distritos),h, nstart= 100) # esta estandarizando
+  wss[h-1]<-b$tot.withinss  
+}
+
+plot(2:10,wss,type="b")
+
+```
+En esta grafica sedimentario se tiene que ver entre quienes la diferencia es mayor en la agrupacion de conglomerados. puede ser entre 2 o 3 ;  3 o 4
+
+# Silueta
+
+Mas tiende a 1 esta mejor conglomerados
+Si se aleja a 1 no es bueno , 
+Si es negativo que tiene un objeto en ese grupo que se parece maa otros conglomerados
+
+```{r}
+library(cluster)
+
+diss.distritos=daisy(scale(distritos)) # calculo la matriz de disimilidad
+par(mfrow=c(1,3))
+for(h in 2:4){
+  res=kmeans(scale(distritos),h, nstart= 100) # encuentra la solucion mas optima
+  plot(silhouette(res$cluster,diss.distritos)) # la distancia que has aplicado en k medias
+}
+par(mfrow=c(1,1))
+```
+
+Criterio de Calinski-Harabasz
+
+    |  .
+    |   .
+    |    .
+    |     .
+WSS |       .
+    |          .
+    |             .
+    |                 .
+    +----------------------------  nro. de conglomerados
+                 
+
+    |  
+    |              .
+    |             .
+    |            .
+R2  |          .
+    |        .    
+    |     .            
+    | .                
+    +----------------------------  nro. de conglomerados
+
+
+```{r}
+# Criterio de Calinski-Harabasz
+library(fpc)
+ch<-numeric()
+for(h in 2:10){
+  res<-kmeans(scale(distritos),h,nstart = 100)
+  ch[h-1]<-calinhara(scale(distritos),res$cluster)
+}
+plot(2:10,ch,type="b",xlab="k",
+     ylab="Criterio de Calinski-Harabasz")
+```
+
+
+```{r}
+kmeansruns(scale(distritos),criterion="ch")
+```
+K-means clustering with 2 clusters of sizes 15, 19
+
+```{r}
+kmeansruns(scale(distritos),criterion="asw")
+```
+K-means clustering with 2 clusters of sizes 19, 15
+
+==================
+Se recomienda usar 3 indicadores, si son distintos podrian ser que tengas que usar estandarizacion o simplemente no aplicar conglomerados
+
+=========
+Se realiza un analisis descriptivo de los conglomerados
+```{r}
+res=kmeans(scale(distritos),2)
+plotcluster(distritos,res$cluster)
+
+clusplot(distritos,res$cluster, color = TRUE,
+         shade = TRUE, labels =2,lines=0,
+         main ="Gr?fico de Conglomerados")
+
+```
+```{r}
+#-----------------------------------------#
+# Perfilado y caracterizaci?n de clusters #
+#-----------------------------------------#
+
+# Adicionar los cluster a la base de datos
+distritos.new<-cbind(distritos,res$cluster)
+colnames(distritos.new)<-c(colnames(distritos.new[,-length(distritos.new)]), "cluster.km")
+head(distritos.new)
+```
+
+
+```{r}
+# Tabla de medias
+med<-aggregate(x = distritos.new[,1:7],by = list(distritos.new$cluster.km),FUN = mean)
+med
+```
+
+
+```{r}
+# Describir variables
+par(mfrow=c(2,4))
+for (i in 1:length(distritos.new[,1:7])) {
+  boxplot(distritos.new[,i]~distritos.new$cluster.km, main=names(distritos.new[i]), type="l")
+}
+par(mfrow=c(1,1))
+```
+Si se ven diferencias es que los conglomerados han sido elegidos adecuadamente
+
+Como alternativa a K - medias
+
+ - K medias se afecta por los outlier
+ 
+Se usa K - medoide :  metodoo que elije un objeto que rempresenta a  todos los objetos
+
+El algoritmo que usa el medoides es el PAM ( Particionamiento Alrededor del Medoide)
+
+BUILD :
+- Elegir al azar los k medoides
+- Ver que cada observacion que distancia tiene con lo k medoides, lo agrupas con las distancia del medoide mas cercanos
+- 
+
+SWAP:
+- Le doy medoides alternativo que esten en conglomerados distintos 
+
+
+Medida de disimilidad --> distancia mas cercana al medoide
+
+
+
+Si PAM me sale igual que K-medias , eso significa que no hay outlier
+
+
+
+
+#########################################################
+#  PAM                                                  #
+#########################################################
+
+```{r}
+# library(cluster)
+# data(iris)
+# a=pam(iris[,1:4],3,diss=F)
+# a$clustering
+# table(a$clustering)
+# table(a$clustering,iris[,5])
+# 
+# library(arules)
+# data(AdultUCI)
+# censusn<-AdultUCI
+# census<-na.omit(censusn)
+# census<-as.data.frame(census[1:1000,])
+# b<-daisy(census[,-15])
+# summary(b)
+# a=pam(b,2,diss=T)
+# a$clustering
+# table(a$clustering)
+# table(a$clustering,census[1:1000,15])
+
+res=pam(scale(distritos),2)
+res
+```
+
+
+```{r}
+plot(res)
+```
+
+```{r}
+asw<-numeric()
+for(h in 2:10){
+res<-pam(scale(distritos),h)
+asw[h-1]<-res$silinfo$avg.width
+}
+plot(2:10,asw,type="b",xlab="k",ylab="ASW")
+```
+
+
+```{r}
+par(mfrow=c(1,3))
+for(h in 2:4){
+res=pam(scale(distritos),h)
+plot(res,which.plots=2)
+}
+```
+
+
+```{r}
+par(mfrow=c(1,1))
+ch<-numeric()
+for(h in 2:10){
+res<-pam(scale(distritos),h)
+ch[h-1]<-calinhara(scale(distritos),res$clustering)
+}
+plot(2:10,ch,type="b",xlab="k",
+ylab="Criterio de Calinski-Harabasz")
+```
+
+
+```{r}
+pamk(scale(distritos),criterion="asw")
+```
+Funcion objetivos:
+------------------
+
+   build     swap 
+1.648834 1.598154 
+
+Empezo con 1.648834 y luego acabo con 1.598154
+
+EL conglomerado es un metodo multivariado
+
+```{r}
+pamk(scale(distritos),criterion="ch")
+```
+Los medoides son:
+
+- San Juan de Miraflores
+- Magdalena del Mar 
+
+```{r}
+res=pam(scale(distritos),2)
+plotcluster(distritos,res$clustering)
+```
+

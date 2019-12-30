@@ -1,0 +1,281 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+####################################################################
+# # Ejemplo: Cr?ditos de  Banco Alem?n                           # #
+####################################################################
+
+```{r}
+#Lectura de Datos
+library(Fahrmeir)
+data(credit)
+#help(credit)
+head(credit)
+```
+
+```{r}
+# Estimacion
+modelo_logistic <- glm(Y ~ ., family=binomial,data=credit)
+#Exito es 1: son los mal pagador. L amayor frecuencia de las categorias se conoce como el ratio no informativo. La funcion glm en el modelo en R toma la mayor categoria como 1 (exito) y la menor como 0 (fracaso)
+
+summary(modelo_logistic)
+```
+#################################
+# Evaluaci?n de la Predicci?n   #
+#################################
+```{r}
+# Ver: https://www.machinelearningplus.com/machine-learning/evaluation-metrics-classification-models-r/
+
+## Matriz de confusi?n (error Clasificaci?n)
+
+# Valores predichos de Y
+yprob<-predict(modelo_logistic,type="response")
+
+# Otra forma:
+#yprob <-  predict(modelo_logistic, newdata = credit[,-1], type = "response")
+ypred <- as.numeric(yprob >= 0.5 ); # Se considera como punto de corte 0.5
+ypred <- factor(ypred, labels = levels(credit$Y)) # Uso factor, porque es categorica
+
+#Otra forma
+#ypred <- as.numeric(predict(modelo_logistic)>0)
+
+# Matriz de Confusi?n
+(mc<-table(ypred,credit$Y))
+testerr <- mean(ypred!=credit$Y)
+testerr
+```
+El error seria = (184+64)/1000
+
+```{r}
+library(caret)
+confusionMatrix(data = ypred,reference = credit$Y, positive = "mal")
+```
+```{r}
+confusionMatrix(data = ypred,reference = credit$Y, positive = "mal", mode = "prec_recall")
+```
+
+
+```{r}
+confusionMatrix(data = ypred,reference = credit$Y, positive = "mal", mode = "everything")
+
+```
+
+* Coeficiente capa de Cohen , se toma la precision por causas aleatorias,  
+
+* Sensibilidad , Que tan bueno es mi clasificador para detectar los eventos ( la observacion). QUe tan bueno es el modelo para identificar morosos
+
+## http://wiki.fast.ai/index.php/Log_Loss
+```{r}
+#LogLoss (http://wiki.fast.ai/index.php/Log_Loss)
+Metrics::logLoss(as.numeric(credit$Y)-1, yprob)
+```
+Menor LogLoss , mejor predice el modelo . Solo es para una perdida binaria
+LogLoos: es otro tipo de perdida (es una perdida logaritmica). Monor LogLoss el modelo es mejor
+LogLoss se usa mas para comparar modelos
+
+```{r}
+MLmetrics::LogLoss(y_pred = yprob,y_true =as.numeric(credit$Y)-1)
+```
+## Curvas ROC
+Modificar el punto de corte se puede modificar la sensibilidad y especificacion, para resolver ese problema se construye la curva ROC
+
+
+En la X va la sensibilidad del modelo : S
+
+   |
+   |                     .
+   |                  .
+   |               .
+   |            .
+   |         .
+   |      .
+   |   .
+   |.
+   ------------------------------------
+         Ratio de falso positivos :  Complemento de la especificidad del modelo  (1-E)
+
+
+    C  | Sensibilidad | Especifidad
+   ------------------------------------
+   0.1 |              |
+   ------------------------------------
+   0.2 |              |
+   ------------------------------------
+    .  |              |
+   ------------------------------------
+    .  |              |
+   ------------------------------------
+   0.8 |              |
+   ------------------------------------
+   0.9 |              |
+      
+
+ Al aumentar el punto de corte gano en Sensibilidad, pero disminuiye en Especificidad., se procede a graficar
+ 
+ 
+   |               *   *
+   |          *           .            Hacia arriba esta el mejor modelo, el ideal es
+   |     *             .                           
+   |               .                                   -------------
+   |   *         .                                     ! 
+   |         .                                         !
+   |  *   .                                            !
+   |   .
+   |.
+   ------------------------------------
+ 
+```{r}
+# install.packages("pROC")
+library(pROC)
+# Area debajo de la curva ROC
+analysis <- roc(response=credit$Y, predictor=yprob)
+analysis
+```
+```{r}
+MLmetrics::AUC(y_pred = yprob,y_true = as.numeric(credit$Y)-1 )   #Le quita 1 pq la base de datos esta como 1 y 2
+```
+# Coeficiente Gini
+```{r}
+2*analysis$auc-1
+```
+
+```{r}
+MLmetrics::Gini(y_pred = yprob,y_true =as.numeric(credit$Y)-1 )
+
+```
+# Grafica de la Curva ROC
+```{r}
+plot(1-analysis$specificities,analysis$sensitivities,type="l",
+     ylab="Sensitividad",xlab="1-Especificidad",col="blue",lwd=2,
+     main = "Curva ROC para el modelo logistico")
+abline(a=0,b=1, col = "red")
+
+```
+```{r}
+# Hallar punto de corte 
+# Usando el criterio del ?ndice J de Youden
+# J = Sensitivity + Specificity - 1
+e <- cbind(analysis$thresholds,analysis$sensitivities+analysis$specificities-1)
+head(e)
+opt_t <- subset(e,e[,2]==max(e[,2]))[,1]
+opt_t
+```
+
+
+```{r}
+ypred2 <- factor(as.numeric(yprob >= opt_t ), labels = levels(credit$Y))
+confusionMatrix(ypred2,credit$Y, positive = "mal")
+```
+```{r}
+# Otra forma
+coords(analysis , "b", ret="t", best.method="youden")
+```
+
+
+```{r}
+InformationValue::plotROC(actuals = as.numeric(credit$Y)-1, predictedScores = yprob)
+InformationValue::AUROC(actuals = as.numeric(credit$Y)-1, predictedScores = yprob)
+InformationValue::optimalCutoff(actuals = as.numeric(credit$Y)-1, predictedScores = yprob, optimiseFor = "Both")
+InformationValue::optimalCutoff(actuals = as.numeric(credit$Y)-1, predictedScores = yprob, optimiseFor = "Ones")
+InformationValue::optimalCutoff(actuals = as.numeric(credit$Y)-1, predictedScores = yprob, optimiseFor = "Zeros")
+
+```
+```{r}
+# Estad?stica KS (Kolmogorov-Smirnov)
+InformationValue::ks_plot(actuals = as.numeric(credit$Y)-1, predictedScores = yprob)
+InformationValue::ks_stat(actuals = as.numeric(credit$Y)-1, predictedScores = yprob)
+InformationValue::ks_stat(actuals = as.numeric(credit$Y)-1, predictedScores = yprob, returnKSTable = TRUE)
+#credit[order(-credit$prob_log),][0:100,c("Y","prob_log")]
+#summary(credit[order(-credit$prob_log),][0:100,c("Y","prob_log")])
+
+```
+```{r}
+#Base de datos con las probabilidades y categorias predichas
+credit$prob_log<- yprob ; credit$ypred_log<- ypred
+```
+
+##################
+## Otros enlaces##
+##################
+
+```{r}
+fmla <- Y ~ Cuenta + Mes + Ppag + Uso + Estc
+
+```
+
+# probit
+
+```{r}
+modelo_probit<- glm(fmla, family=binomial(link=probit),data=credit)
+summary(modelo_probit)
+yprob<-predict(modelo_probit,type="response")
+ypred <- factor(as.numeric(yprob >= 0.5 ), labels = levels(credit$Y))
+
+caret::confusionMatrix(ypred,credit$Y, positive = "mal")
+MLmetrics::LogLoss(yprob,as.numeric(credit$Y)-1)
+MLmetrics::AUC(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::Gini(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::KS_Stat(yprob,as.numeric(credit$Y)-1 )
+
+confusionMatrix(as.factor(ypred),admision$admit, positive = "1")
+logLoss(as.numeric(admision$admit), predict(admision.fit2, type="response"))
+
+```
+
+```{r}
+#cloglog
+modelo_cloglog<- glm(fmla, family=binomial(link=cloglog),data=credit)
+summary(modelo_cloglog)
+
+yprob<-predict(modelo_cloglog,type="response")
+ypred <- factor(as.numeric(yprob >= 0.5 ), labels = levels(credit$Y))
+
+caret::confusionMatrix(ypred,credit$Y, positive = "mal")
+MLmetrics::LogLoss(yprob,as.numeric(credit$Y)-1)
+MLmetrics::AUC(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::Gini(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::KS_Stat(yprob,as.numeric(credit$Y)-1 )
+
+```
+```{r}
+#cauchit
+modelo_cauchit<- glm(fmla, family=binomial(link=cauchit),data=credit)
+summary(modelo_cauchit)
+
+yprob<-predict(modelo_cauchit,type="response")
+ypred <- factor(as.numeric(yprob >= 0.5 ), labels = levels(credit$Y))
+
+caret::confusionMatrix(ypred,credit$Y, positive = "mal")
+MLmetrics::LogLoss(yprob,as.numeric(credit$Y)-1)
+MLmetrics::AUC(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::Gini(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::KS_Stat(yprob,as.numeric(credit$Y)-1 )
+
+```
+
+```{r}
+# Aranda-Ordaz
+source('http://www.poleto.com/funcoes/arandafR.txt')
+source('http://www.poleto.com/funcoes/aranda.bino.txt')
+
+aranda.bino(modelo_logistic,seq(-0.,3.0,0.01))
+
+modelo_aranda<- glm(fmla, family=aranda(1.64),data=credit)
+summary(modelo_aranda)
+
+yprob<-predict(modelo_aranda,type="response")
+ypred <- factor(as.numeric(yprob >= 0.5 ), labels = levels(credit$Y))
+
+caret::confusionMatrix(ypred,credit$Y, positive = "mal")
+MLmetrics::LogLoss(yprob,as.numeric(credit$Y)-1)
+MLmetrics::AUC(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::Gini(yprob,as.numeric(credit$Y)-1 )
+MLmetrics::KS_Stat(yprob,as.numeric(credit$Y)-1 )
+
+```
+
+
+
+

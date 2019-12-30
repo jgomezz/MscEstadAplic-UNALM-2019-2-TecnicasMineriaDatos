@@ -1,0 +1,182 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Modelo parametricos:
+
+Metodos de los K-vecinos mas cercanos:
+======================================
+
+- Definir la k instancias que estan mas cercas de. Se escoge usualmente un valor impara de k
+- Toma las k vecinos mas cercanos, si la variable a predecir es categorica, se observa cual es la moda.
+- La probabilidad se basa es la frecuencia.
+- Es un clasificador ocioso, calcula todas ls distancias, toma tiempo para el calculo
+- El valor k es un hiperparametro, porque se tiene que definir
+- Para el caso de las distancias, deben ser cuantitativas, en caso se tenga valores cualitativos no se puede usar las distancias, se recomienda dicomotomizar las variable categorica. 
+
+- La distancia de Boogle trabaja con distancias absolutas
+
+- Se suele usar kernel para asignar pesos
+
+
+Regresion Logistica ( Multinomial)
+====================
+ - Se define primero la probabildad
+ - No se estima 
+
+#------------------------------------------------------------------#
+#  K-NN                                                            #
+#------------------------------------------------------------------#
+
+####################################################################
+# # Ejemplo: Diabetes                                            # #
+####################################################################
+```{r}
+
+diabetes=read.csv("DiabetesTrain.csv")
+#diabetes=read.csv(file.choose())
+head(diabetes)
+```
+```{r}
+table(diabetes$class)
+```
+chemical --> Diagnostico que tiene Diabetes
+- Tenemos un problema politonico
+
+```{r}
+library(class)
+b<-knn(train = diabetes[,1:3],test = diabetes[,1:3],cl = diabetes[,4])
+## 
+b
+```
+Nos muestra los valores predichos con los natureles
+
+```{r}
+#Estimacion del error por resubstituci?n
+confusionMatrix(b,diabetes[,4])
+```
+El Accuracty es 1 porque el k es 1 y la data de entrenamiento y validacion es la misma.
+
+```{r}
+# con K=3
+k_3 <- knn(train = diabetes[,1:3],test = diabetes[,1:3],cl = diabetes[,4], k = 3)
+confusionMatrix(k_3,diabetes[,4])
+
+mean(k_3 == diabetes[,4])
+```
+
+```{r}
+# con K=7
+k_7 <- knn(train = diabetes[,1:3],test = diabetes[,1:3],cl = diabetes[,4], k = 7)
+confusionMatrix(k_7,diabetes[,4])
+mean(k_7 == diabetes[,4])
+```
+
+```{r}
+# con K=15
+k_15 <- knn(train = diabetes[,1:3],test = diabetes[,1:3],cl = diabetes[,4], k = 15)
+confusionMatrix(k_15,diabetes[,4])
+mean(k_15 == diabetes[,4])
+```
+```{r}
+## Usando validaci?n cruzada
+set.seed(007)
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=1)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=3)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=5)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=7)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=9)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=11)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=13)==diabetes[,4])
+mean(knn.cv(train = diabetes[,1:3],cl = diabetes[,4],k=15)==diabetes[,4])
+```
+Se elije el valor de k=3 porque es el que tiene el mejor valor de media
+
+```{r}
+K_3 <- knn(train = diabetes[,1:3],test = diabetes[,1:3],cl = diabetes[,4], k = 3, prob = TRUE)
+confusionMatrix(K_3,diabetes[,4])
+mean(K_3 == diabetes[,4])
+```
+```{r}
+# Obtener la pro. de votos
+K_3_prob <- attr(K_3, "prob")
+```
+
+
+```{r}
+# Valores predichos
+head(K_3)
+```
+
+
+```{r}
+# Prop. de "votos"
+head(K_3_prob)
+
+```
+
+
+```{r}
+
+#===============================================================================
+# Usando Caret
+#===============================================================================
+# N?mero de repeticiones y semilla
+k <- 10
+repeticiones <- 5
+hiperparametros <- data.frame(k = c(1, 3, 5, 7, 9,  11, 13, 15, 17, 21, 31, 51))
+
+set.seed(666)
+seeds <- vector(mode = "list", length = (k * repeticiones) + 1)
+for (i in 1:(k * repeticiones)) {
+  seeds[[i]] <- sample.int(1000, nrow(hiperparametros))
+}
+seeds[[(k * repeticiones) + 1]] <- sample.int(1000, 1)
+
+```
+
+```{r}
+
+# AJUSTE DEL MODELO
+
+# ==============================================================================
+cvmod.knn <-train(class ~.,
+                    data = diabetes,
+                    method = "knn",
+                    tuneGrid = hiperparametros,
+                    metric = "Accuracy",
+                    trControl = trainControl(method = "repeatedcv",
+                                             number = k, seeds = seeds,
+                                             repeats = repeticiones, returnResamp = "final") 
+)
+cvmod.knn
+cvmod.knn$bestTune
+
+```
+
+```{r}
+library(ggplot2)
+ggplot(cvmod.knn , highlight = TRUE) +
+  scale_x_continuous(breaks = hiperparametros$k) +
+  labs(title = "Evolucion del accuracy del modelo KNN", x = "K") +
+  theme_bw()
+```
+Revisar los script  : regresion_red.R
+
+```{r}
+
+```
+
+===============
+
+
+Base de datos admision : binary.csv
+
+admit, gre, gpa, rank
+
+Se desea saber si alguien puede ser admitido 
+
+rank : es cardina , categorica
+
+

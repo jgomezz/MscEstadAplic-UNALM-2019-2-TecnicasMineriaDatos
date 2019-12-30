@@ -1,0 +1,94 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# Evaluacion de metricas
+
+```{r}
+# 1. Import dataset
+trainData <- read.csv('https://raw.githubusercontent.com/selva86/datasets/master/breastcancer_training.csv')
+testData <- read.csv('https://raw.githubusercontent.com/selva86/datasets/master/breastcancer_test.csv')
+
+# 2. Build Logistic Model
+logitmod <- glm(Class ~ Cl.thickness + Cell.size + Cell.shape, family = "binomial", data=trainData)
+
+# 3. Predict on testData
+pred <- predict(logitmod, newdata = testData, type = "response")
+
+# 4. If p > .5, then Class is 1 else 0
+y_pred <- ifelse(pred > 0.5, 1, 0)
+y_act <- testData$Class
+
+# 5. Accuracy
+mean(y_pred == y_act)  # 94%
+```
+```{r}
+y_pred <- factor(y_pred) 
+y_act <- factor(y_act) 
+
+library(caret)
+caret::confusionMatrix(y_pred, y_act, positive="1", mode="everything")
+```
+```{r}
+#devtools::install_github("selva86/InformationValue")
+library(InformationValue)
+actual <- as.numeric(as.character(y_act))
+pred <- as.numeric(as.character(y_pred))
+
+recall(actual, pred)
+#> 0.9859155
+```
+
+
+```{r}
+precision(actual, pred)
+#> 0.8641975
+```
+
+```{r}
+fscore(actual, pred)
+
+```
+# What is KS Statistic and How to interpret KS Chart?
+```{r}
+library(InformationValue)
+#ks_stat(y_act, y_pred)
+ks_stat(actual, pred)
+
+##> 0.8034
+```
+
+
+```{r}
+#ks_stat(y_act, y_pred, returnKSTable = T)
+ks_stat(actual, pred, returnKSTable = T)
+```
+# 8. How to plot Kolmogorov Smirnov Chart in R?
+```{r}
+library(InformationValue)
+ks_plot(actual, pred)
+```
+```{r}
+# install.packges("InformationValue")
+library(InformationValue)
+InformationValue::plotROC(y_act, pred)
+```
+
+
+```{r}
+InformationValue::AUROC(y_act, pred)
+#> 86.98
+```
+
+# 10. Concordance and Discordance
+
+```{r}
+InformationValue::Concordance(y_act, pred)
+```
+# 11. What is Somers-D Statistic?
+```{r}
+library(InformationValue)
+somersD(actual, pred) 
+#> 0.8087472
+```
+

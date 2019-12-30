@@ -1,0 +1,242 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+La variable Y tienes K valores diferentes
+
+
+ANALISIS DE DISCRIMINANTE LINEAL :
+----------------------------------
+
+      y  |  x1  |  x2 | .................| xn |
+      -------------------------------------------
+      1
+      1
+DS1   .
+      .
+      1
+      1
+      --------------------------------------------
+      .
+      .
+      .
+      .
+      .
+      .
+      --------------------------------------------
+      k
+      k
+DSk   .
+      .
+      k
+      k
+
+
+M1 
+
+
+Descrubir cual es la densidad para cada uno de los k modelos
+
+Funcion de densidad : si los datos son continuos
+Funcion de probabilidad : si los datos con discretos
+
+La idea es maximar la funcion de densidad, se usa el MLE ( Metodo de Verosimilitud)
+
+Clasificador Bayesiano
+======================
+
+
+
+Clasificador Naives Bayesiano
+=============================
+
+Es un clasificador ingenuo
+
+Naive : asume independencia condicional dentro de las clases
+
+Dado a que clase pertences a un grupo , las variables pueden ser independientes
+
+Dado que una persona es moroso, la edad y el salario son independientes.
+
+
+Ejemplo
+=======
+
+
+X1, X2, X3, Y
+
+
+
+Predecir : X0 = (X1=0; X2=0; X3=1) = (0,0,1)
+
+P(y=0 )
+
+
+
+El calculo anterior se realiza cuando son variables discretas :
+==============================================================
+
+1,. Asumir que la funcion de densidad sigue una distribucion normal
+
+2,. Usar un modelo no parametrico, pero puede llegar a tener un sobreajuste
+
+3.- Discretizar la variable para que sea ordinal
+
+
+En caso de la probabilida sea cero, se usa la correción de Laplace o laplaciano
+-----------------------------------
+
+Correcion de Laplace mas uno, 
+
+Dado la siguiente operacion:
+
+$$\frac{1}{3}*\frac{2}{5}*\frac{0}{2}$$
+
+Aplicacndo correción de laplace mas 1
+
+$$\frac{1 + 1}{3 +1}*\frac{2+1}{5+1}*\frac{0+1}{2+1}$$
+============================================================
+ESTO ES UN ESTIMADOR BAYESIANO , NO ES ESTADISTICA BAYESIANA
+============================================================
+Redes Bayesianas se ve mas en inteligencia artificiales
+
+#------------------------------------------------------------------#
+#   Naive Bayes                                                    #
+#------------------------------------------------------------------#
+
+Tiens 2 alternativas : o trabaja como distribucion normal o lo discretizas
+
+```{r}
+
+####################################################################
+# # Ejemplo: Diabetes                                            # #
+####################################################################
+diabetes=read.csv("DiabetesTrain.csv")
+head(diabetes)
+
+# Sin discretizar : 
+library(e1071) # Solo soporta distribucion gausiana
+a<-naiveBayes(class ~ .,data = diabetes)
+a
+```
+Se debe verificar que los valores no deben ser cero
+```{r}
+pred=predict(a,diabetes[,-4],type="raw") # Se quita la variable respuesta
+head(pred)
+```
+
+```{r}
+# Busco el mayor valor
+pred1=factor(max.col(pred), labels = levels(diabetes$class))
+head(pred1)
+```
+Tiene las categorias que tiene la variable
+
+```{r}
+library(caret)
+confusionMatrix(pred1,diabetes[,4])
+
+```
+Se tiene un accuracy de 0.8957 , casi similar que KNN
+
+Se usara la libreria nai
+
+```{r}
+#install.packages("naivebayes")
+library(naivebayes)
+a<-naive_bayes(class ~ .,data = diabetes)
+a
+```
+```{r}
+pred=predict(a,diabetes[,-4])
+pred
+```
+
+```{r}
+confusionMatrix(pred,diabetes[,4])
+```
+```{r}
+predict(a,diabetes[,-4],type = "prob")
+```
+Observar
+```{r}
+hist(diabetes$glucose)
+```
+
+```{r}
+hist(diabetes$insulin)
+```
+Por lo tanto no sigue una distribucion gausiana
+
+# Se usa la densidad por Kernel
+```{r}
+a<-naive_bayes(class ~ .,data = diabetes,usekernel = TRUE)
+a
+```
+```{r}
+plot(a)
+```
+
+```{r}
+pred=predict(a,diabetes[,-4])
+pred
+```
+
+```{r}
+confusionMatrix(pred,diabetes[,4])
+
+```
+
+## Vamos a discretizar
+
+```{r}
+# Discretizando por el m?todo Chi-Merge
+library(discretization)
+d_diab = chiM(diabetes,0.01)$Disc.data
+d_diab
+```
+
+```{r}
+for (i in 1:3){
+  d_diab[,i]=as.factor(d_diab[,i])}
+
+b <- naive_bayes(class ~ .,data = d_diab) # aca s
+b
+```
+
+```{r}
+pred=predict(b,d_diab[,-4])
+confusionMatrix(pred,d_diab[,4])
+```
+
+Los modelos del clasificador que se han visto son:
+==================================================
+Regresion Logistica
+KNN
+Naive Bayes
+
+El ultimo modelo es un video 
+
+EXAMEN FINAL:
+  > Media hora : Clasificador reducido 
+  > Hora y media : vale 5 minutos
+  > Hora y media : teorica 
+  
+Viene de Cluster
+
+
+  
+  
+  
+
+
+Metodos de Ensamblado del Modelo, es lo que no se ha visto
+
+
+
+
+
+
+
+

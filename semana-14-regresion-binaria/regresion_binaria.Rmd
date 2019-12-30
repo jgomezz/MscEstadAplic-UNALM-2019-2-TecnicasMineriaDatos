@@ -1,0 +1,306 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Calcular metricas para evaluar los modelos de clasificacion, 
+se vio el modelo de regresion logistica
+
+Se vio la matriz de confusion
+
+Se hace un punto de corte
+
+Se calcula la tabla
+
+El problema de la tabla se genera a partir de un punto arbitrario
+
+Otra opcion es ver el nivel 
+
+El nivel de la curva PROD, se veia todos los putnos de corte
+Se veia la sencibilidad
+
+Otra alternativa ver una funcion de perdida, de tipo logartimica
+
+Se vio diferentes formas de ver la performance
+
+
+
+Regresion Logistica
+
+Modelo Discriminante :
+
+
+Población 
+---------------------
+|                  |
+|                  |
+---------------------
+
+d: clasificador 
+  |
+  |  Desempeño
+  |
+  Accuracy
+  S(d) : Sensibilidad
+  E(d)
+  Avc(d)
+  
+   Estos son parametros de la población 
+  
+Esto es a nivel poblacional, 
+
+Pero usamos una muestra:
+---------------------
+|                  |
+|                  |
+---------------------
+
+   Desempeño (estimado)
+   Accuracy estimada  
+      ..
+      ..
+      ..
+
+Desempeño predictivo en un conjunto de datos
+¿Estimacion ?
+- Resustitución :
+  =============
+          Estimar el o los indicadores con los mismo datos con los cuales entrenastes el modelo. 
+  Usualmente la estimacion es casi siempre optimista, puede ser que cuando evalua el modelo me salgan menor desempeño cuando entrene el modelo.
+- Retención : 
+ =========== 
+           Evaluar el desempeño del modelo con una base de datos distinto para le entrenamiento y otra para evaluar el desempeño de la estimacion de los modelos de los datos.  
+
+  Si se tiene un solo modelo , se particiona los datos:
+  
+        Entrenamiento     Prueba / Evaluacion
+  |-----------------------|-----------------|
+  
+  Con los datos de entrenamiento estimo el clasificador: d^
+  
+  Con los datos de prueba estimo los indicadores de estimación del modelo. M^(d) : Evaluo el desempeño que va a tener el clasificador.
+  
+  Se suele usar cuando hay abundancia de datos, las caractersitisca de los 2 datos son similares
+  
+  
+  Que pasa si tienes varios clasificador, 
+  
+        Entrenamiento     Prueba / Evaluacion
+  |-----------------------|-----------------|
+  
+
+  Entrenamiento , se estima los parametros d^1, d^2, ....., d^k , que tengan los distintios 
+  
+  Evaluar las medidad de desempeño que tiene cada uno de los parametros de ellos
+  
+      Entrenamiento    Validacion     Prueba / Evaluacion
+  |-----------------!--------------|--------------------|
+  
+  a^1, d^2, .., d^k
+                     M^(d1), M^(d2),...,M^k(dk)
+                    Se escoge el mejor Di 
+                                     Se Evalua el M^(d mejor modelo)
+                     
+
+- Validación Cruzada :  K-CV
+  ==================
+
+    Validacion        Entrenamiento
+1)  |---G1---!---G2---|--- ..........--|---Gk---|  => M^1(d1),....., M^1(dm)
+    XXXXXXXXXX
+             d^1, ....,d^m
+    
+    en el conjuto de entreamiento se calculo los parametros del clasificador
+    
+    Con el conjunto de datos de validacion se uso para validar los parametros del estimador
+    
+    Primer medida de estimacion del desempeño de cada clasificador : M^1(d1)
+    
+     Entren. Validacion     Entrenamiento
+2)  |---G1---!---G2---|--- ..........--|---Gk---|  => M^2(d1),....., M^2(dm)
+             XXXXXXXXXX
+            d^1,......,d^m  
+     
+..
+..
+..
+            Entrenamiento             Validacion  
+k)  |---G1---!---G2---|--- ..........--|---Gk---|  => M^k(d1),....., M^k(dm)
+                                       XXXXXXXXXX  
+                                    d^1,......,d^m  
+
+         k
+M^(dj) = SUM [M^i(dj)]/[k]
+        i=1
+
+
+
+Tenemos 2 problemas:
+====================
+
+-Esto es la estimacion del los parametros del modelo se hace con todos los datos
+
+-Estimacion del desempeño que va a tener el modelo con nuevas observaciones
+
+```{r}
+####################################################################
+# # Ejemplo: Cr?ditos de  Banco Alem?n                           # #
+####################################################################
+#Lectura de Datos
+library(Fahrmeir)
+data(credit)
+help(credit)
+head(credit)
+```
+```{r}
+# Estimacion
+modelo_logistic <- glm(Y ~ ., family=binomial,data=credit)
+summary(modelo_logistic)
+```
+```{r}
+#################################
+# Evaluaci?n de la Predicci?n   #
+#################################
+# Ver: https://www.machinelearningplus.com/machine-learning/evaluation-metrics-classification-models-r/
+
+## Matriz de confusi?n (error Clasificaci?n)
+
+# Valores predichos de Y
+yprob<-predict(modelo_logistic,type="response")
+# Otra forma:
+#yprob <-  predict(modelo_logistic, newdata = credit[,-1], type = "response")
+ypred <- as.numeric(yprob >= 0.5 ); ypred <- factor(ypred, labels = levels(credit$Y))
+#Otra forma
+#ypred <- as.numeric(predict(modelo_logistic)>0)
+
+# Matriz de Confusi?n
+(mc<-table(ypred,credit$Y))
+testerr <- mean(ypred!=credit$Y)
+testerr
+
+
+library(caret)
+confusionMatrix(data = ypred,reference = credit$Y, positive = "mal")
+confusionMatrix(data = ypred,reference = credit$Y, positive = "mal", mode = "prec_recall")
+confusionMatrix(data = ypred,reference = credit$Y, positive = "mal", mode = "everything")
+
+#LogLoss (http://wiki.fast.ai/index.php/Log_Loss)
+Metrics::logLoss(as.numeric(credit$Y)-1, yprob)
+MLmetrics::LogLoss(y_pred = yprob,y_true =as.numeric(credit$Y)-1)
+
+```
+
+
+## Entrenamiento y Validacion con Caret
+
+# Metrica 
+#================================================================
+```{r}
+# Puede ser "Accuracy",   "logLoss", "ROC",   "Kappa"
+metrica <- "ROC"
+```
+
+# HIPERPAR?METROS, N?MERO DE REPETICIONES Y SEMILLAS PARA CADA REPETICION
+#================================================================
+```{r}
+particiones  <- 10 # Es el valor de K
+repeticiones <- 5 # Cuantas veces voy hacer las repeticiones
+```
+
+# HIPERPAR?METROS, N?MERO DE REPETICIONES Y SEMILLAS PARA CADA REPETICI?N
+#================================================================
+```{r}
+# Son parametros que no se define, son parametros que se asignan
+# none significa que no hay hiperparametros
+hiperparametros <- data.frame(parameter = "none")
+```
+
+# DEFINICI?N DEL ENTRENAMIENTO
+#================================================================
+```{r}
+##################
+## Otros enlaces##
+##################
+fmla <- Y ~ Cuenta + Mes + Ppag + Uso + Estc
+
+```
+
+
+```{r}
+library(caret)
+control_train <- trainControl(method = "repeatedcv", number = particiones,  #
+                              repeats = repeticiones,
+                              #seeds = seeds,
+                              classProbs = TRUE,                            # PAra que  
+                              summaryFunction = twoClassSummary,            # Saga el ROC
+                              returnResamp = "final", verboseIter = FALSE,
+                              allowParallel = TRUE)
+
+```
+
+
+```{r}
+set.seed(666)
+modelo_logistic <- train(fmla, data = credit,
+                         method = "glm",
+                         tuneGrid = hiperparametros,
+                         metric = metrica,
+                         trControl = control_train,
+                         family = "binomial")
+```
+
+```{r}
+modelo_logistic
+```
+```{r}
+# Buscar en google modelos disponibles en caret
+# https://topepo.github.io/caret/available-models.html
+# 6 Available Models
+
+```
+
+
+¿AUC(d_log)?
+
+AUC^(d_log)    =  0.775
+           Res
+          
+AUC^(d_log)    =  0.768 (+ o - 0.04)  # Se elige esta porque tiene mas modelos 
+           5-CV
+                          Desviacion estandard
+```{r}
+modelo_logistic$results
+
+```
+Vamos a ver 
+
+```{r}
+modelo_logistic$finalModel
+```
+```{r}
+# Usando LogLoss
+metrica <- "logLoss"
+```
+
+```{r}
+mnLogLoss
+```
+Se recomienda hacer una funcion personalizada en caso no exista la funcion en la libreria caret
+
+```{r}
+# DEFINICI?N DEL ENTRENAMIENTO
+#===============================================================================
+control_train <- trainControl(method = "repeatedcv", number = particiones,
+                              repeats = repeticiones,
+                              #seeds = seeds,
+                              classProbs = TRUE,
+                              summaryFunction = mnLogLoss,
+                              returnResamp = "final", verboseIter = FALSE,
+                              allowParallel = TRUE)
+
+```
+
+
+
+
+
