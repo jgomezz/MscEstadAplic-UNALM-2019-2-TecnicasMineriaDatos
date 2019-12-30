@@ -1,0 +1,112 @@
+---
+title: "reglas de asociacion"
+output:
+  word_document: default
+---
+
+
+#_______________________________________________________
+# Paso 1: Obtener y procesar la base de datos
+#_______________________________________________________
+
+```{r }
+library(arules)
+dvds <- read.transactions("dvdtrans-modificado.csv", 
+                               sep = ",",
+                               format = "basket", header = TRUE)
+
+```
+
+
+```{r}
+dvds
+```
+
+```{r}
+summary(dvds)
+```
+
+```{r}
+dim(dvds)
+```
+
+```{r}
+basketSizes <- size(dvds)
+basketSizes
+```
+
+```{r}
+summary(basketSizes)
+```
+```{r}
+library(ggplot2)
+ggplot(data.frame(count = basketSizes)) +
+  geom_density(aes(x=count))
+```
+
+
+
+```{r}
+# Mostrar las transacciones
+labels(dvds) # me das las etiqutas de las transacciones
+colnames(dvds)[1:5] # me devuelve el nombre de los items
+```
+
+```{r}
+# Mostrar un subconjunto de transacciones (p. ej. las cinco primeras)
+inspect(dvds[1:5])
+```
+
+El soporte es la proporcion de los itemsets
+```{r}
+# Mostrar el soporte (proporción de transacciones) de un item (p. ej. de los tres primeros)
+itemFrequency(dvds)
+```
+```{r}
+# Visualizar el soporte de los items (p. ej. de aquellos items con una proporcion mayor a 0.15)
+itemFrequencyPlot(dvds, support = 0.1)
+```
+
+```{r}
+# Visualizar el soporte de los items (p. ej.de los 20 ?tems con mayor soporte)
+itemFrequencyPlot(dvds, topN = 20)
+```
+#_______________________________________________________
+# Paso 2: Entrenar el modelo con los datos
+#_______________________________________________________
+
+```{r}
+dvdsrules <- apriori(dvds, parameter = list(support = 0.010,
+			 confidence = 0.25, minlen = 2))
+
+dvdsrules
+```
+ay que ver si los parametros son adecuados
+
+```{r}
+#_______________________________________________________
+# Paso 3: Evaluar el modelo
+#_______________________________________________________
+
+summary(dvdsrules)
+
+```
+```{r}
+# Mostrar las tres primeras reglas de asociacion
+inspect(dvdsrules[1:37])
+```
+```{r}
+# Subconjuntos de reglas
+rules <- subset(dvdsrules, items %in% "Sixth Sense")
+inspect(rules)
+```
+
+```{r}
+# Subconjuntos de reglas
+rules <- subset(dvdsrules, lhs  %in% "Sixth Sense")
+inspect(rules)
+```
+
+## Se observa que a las personas que han visto "Sixth Sense" , se les recomienda ver las peliculas "Patriot" y "Gladiator"
+
+
