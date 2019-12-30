@@ -1,0 +1,133 @@
+---
+title: "Clustering"
+output: html_notebook
+---
+
+Los conglomerados que son descubiertos se asemejan bajo ciertas caracteristicas
+
+La tecnicas de clustering --> son tecnicas no supervisados
+
+De antemano no se a que grupo pertenece cada objeto 
+
+No existe una etiqueta real porque es subjectiva 
+
+Tipo de Analisis de cluster
+---------------------------
+
+- Jerarquicos : Cada individuo pertenece a un cluster 
+- Particional : Se definen la cantidad inicial de conglomerados ( ejem. tecnicas de K medias, usar el valor central)
+- Bayesiana : Usar reglas de agrupacion
+
+
+- Problemas de aglutinacion : tiene 2 objetos que estan en mas de 2 conglomerados. usar un coeficiente que pertenezca a un conglomerado.
+
+- Problemas de disección : Cuando todos los datos de la misma poblacion y no tiene sentido segmentar. UNo no se entera que los datos vienen de la misma poblacion.
+
+
+Los clustering usan medidas que me permiten agrupar en clustering
+
+- Medida de similaridad : mide la pertenencia a un conglomerado
+      * 1 --> completamente similares
+      * 0 --> no similares
+     
+- Medida de distancia (disimilaridad) : 
+  - Distancia Euclediana                            
+  - Distancia de Manhattan ( City Block)
+  - Distancia de Minkoswi : Sumar  para cada uno de los m atributos la diferencia que hay entre el valor de ese atributo con el atributo j y lo elevamos a la p, luego se saca la raiz p .  Siempre va hacer positiva, Es simetrica , va a responder a la desigualdad triangular. casos
+  
+         p = 1  => Distancia de Manhattan  : L1 norm
+         p = 2  =>  Distanacia Euclediana  : L2 norm
+         p = infinito => Distancia Suprema (Chebychev) :  Lmax norm
+  
+   Todo esto es para atributos cuantitativos
+   
+  - Distancia de Gower : Pero para atributos cuantitativos y cualitativos  
+
+      Si son las mismas categorias la distancia es 0
+      Si son diferentes categorias la distancia es 1
+
+  
+```{r}
+# Instalacion de Paquetes
+install.packages(c("cluster","fpc","mclust","flexmix","prabclus","diptest","trimcluster","plyr","modeltools","mvtnorm","robustbase","kernlab"),dependencies = c("Depends"))
+#                 dependencies = c("Depends", "Suggests"))
+
+```
+
+#########################################################
+#  Distancias                                           #
+#########################################################
+
+```{r}
+set.seed(666)
+x = matrix(rnorm(20), nrow=5)
+x
+
+```
+
+```{r}
+# Distance Matrix Computation
+dist(x)
+```
+- Los objetos 2 y 4 son lo que tienen la menor distancia, asi que se agrupan juntos
+- Los objetos 4 y 5 tienen la mayor distancia, se agrupan en forma diferentes
+```{r}
+# Calculo manual de la distancia Euclediana
+# x[1,] --> fila 1
+# x[2,] --> fila 2
+print(sqrt(sum((x[1,] - x[1,])^2)))
+print(sqrt(sum((x[1,] - x[2,])^2)))
+print(sqrt(sum((x[1,] - x[3,])^2)))
+print(sqrt(sum((x[1,] - x[4,])^2)))
+print(sqrt(sum((x[1,] - x[5,])^2)))
+
+```
+
+```{r}
+dist(x, method= "manhattan",diag = TRUE)
+```
+```{r}
+# Calculo manual de la distancia de Manhattan
+# x[1,] --> fila 1
+# x[2,] --> fila 2
+print(sum(abs(x[1,] - x[1,])))
+print(sum(abs(x[1,] - x[2,])))
+print(sum(abs(x[1,] - x[3,])))
+print(sum(abs(x[1,] - x[4,])))
+print(sum(abs(x[1,] - x[5,])))
+```
+
+```{r}
+dist(x, method= "maximum",upper = TRUE) # upper = TRUE  : muestra la matrix completa
+```
+```{r}
+# Calculo manual de la distancia Maximum  or Supremum
+# x[1,] --> fila 1
+# x[2,] --> fila 2
+print(max(abs(x[1,] - x[1,])))
+print(max(abs(x[1,] - x[2,])))
+print(max(abs(x[1,] - x[3,])))
+print(max(abs(x[1,] - x[4,])))
+print(max(abs(x[1,] - x[5,])))
+```
+# dist : no permite encontrar distancia con datos mixtos
+```{r}
+library(cluster)
+#x = matrix(rnorm(20), nrow=5)
+daisy(x) # funcion usada para calcular la distancia 
+```
+# Se procede a crear datos mixtos
+```{r}
+x = cbind(rnorm(10),sample(1:3,10,replace=T))
+x <- as.data.frame(x)
+str(x) 
+```
+Se observa datos cateogoricos en V2
+```{r}
+x[,2]<-as.factor(x[,2])
+daisy(x)
+```
+# Usa el metodo de distancia de Gower 
+
+# PRACTICA CALIFICADA : REGLAS DE ASOCIACION Y DISCRETIZACION
+METODO DE CLustering particionales

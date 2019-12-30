@@ -1,0 +1,390 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Instalacion de Paquetes
+install.packages(c("cluster","fpc","mclust","flexmix","prabclus","diptest","trimcluster","plyr","modeltools","mvtnorm","robustbase","kernlab"),dependencies = c("Depends"))
+```
+#-------------------------------------------------------#
+# Ejemplo distritos                                     #
+#-------------------------------------------------------#
+```{r}
+library(foreign)
+distritos=read.spss("distritos.sav",use.value.labels=TRUE, max.value.labels=Inf, to.data.frame=TRUE)
+```
+Como se desea que la columna "distrito" aparezca con 
+```{r}
+colnames(distritos) <- tolower(colnames(distritos))
+nombres=distritos[,1]
+distritos=distritos[,-1]
+rownames(distritos)=nombres
+head(distritos)
+```
+
+#########################################################
+#  CLARA                                                #
+#########################################################
+CLARA : Tecnica particional, por lo tanto se debe indicar la cantida de K media
+
+```{r}
+library("cluster")
+res=clara(scale(distritos),2) # trabaja con la distancia euclediana
+                              # samples por defecto es 5
+                              # sampsize : tamaño de la muestra
+                              #           min(n, 40 + 2 * k)            
+res
+```
+```{r}
+plot(res)
+```
+```{r}
+library("cluster")
+res=clara(scale(distritos),2, sampsize = 10) # reduzco el tamaño de la muestra a 10            
+res
+
+```
+
+#########################################################
+#  Fuzzy C-Means (FCM): FANNY                           #
+#########################################################
+Es un cluster difuso, es entre particional y difusa
+Se puede usar en los casos en que una observacion puede pertenecer a mas de un conglomerado
+
+Caracteristicas:
+- Se asigna un coeficiente ($u_i$) para cada observacion y cluster
+- Los coeficientes no debe ser negativo
+- La suma de los coeficientes para una observacion debe ser 1
+
+         |         Conglomerado (v)  
+Obser.   |    1      |      2    | . ....... |  k
+---------------------------------------------------------
+  1      |    u11    |    u12   |  .........|  u1k
+---------------------------------------------------------
+  2      |    u21    |    u22   |  .........|  u2k
+---------------------------------------------------------
+  .
+  .
+  .
+  .
+---------------------------------------------------------
+  n      |    un1    |    un2   |  .........|  unk
+---------------------------------------------------------
+
+u11 + u12 + ......+ u1k = 1
+
+La solucióm mas particional pasa cuando cualquiera de los coeficientes es 1, por ejemplo su u11 = 1, los demas coeficientes son 0.
+
+La solución mas difusa es que cada coeficiente sea igual a 1/k , es decir las observaciones estan en todos los conglomerados.
+
+Solamente se usa cuando quiero saber si un individuo esta en mas de un conglomerados.
+
+Solo se puede evaluar una hipotesis si un individuo puede estar en mas de un conglomerados
+
+Indice de Dunn, varia de [1/k ; 1]
+
+si sale cercanod de 1/k, entonces valio la pena usar FANNY
+si sale cercano a 1, entonces no valio la pena usar FANNY
+
+```{r}
+# Considerando 2 conglomerados
+res.fanny =fanny(scale(distritos),2)
+res.fanny
+```
+La solucion mas particional : 
+-----------------------------
+Magdalena del Mar en el 2do Conglomerado : Tiene el mayor valor
+San Juan de Miraflores en el 1er Conglomerado : Tiene el mayor valor
+
+En PAN los meloides eran Magdalena y San Juan de Miraflores, eran los meloidas porque eran lo mas representativos.
+
+Una evaluacion estadisticas para saber que tan bien aplicamos FANNY es ver el indice de Dunn
+
+```{r}
+head(res.fanny$membership, 3) # Coeficientes de pertenencia
+res.fanny$coeff # Coeficiente de Dunn
+```
+Se estandariza en Indice de Dunn y el valor es 0.23 que es cercano a 0, por lo tanto se concluye que FANNY fue adecuado.  
+
+```{r}
+head(res.fanny$clustering) # Grupos de pertenencia
+```
+```{r}
+# Visualizar los conglomerados y la bondad de ajuste de los resulgados
+plot(res.fanny)
+```
+
+```{r}
+#install.packages("factoextra")
+library(factoextra)
+fviz_cluster(res.fanny, ellipse.type = "norm", repel = TRUE,
+             palette = "jco", ggtheme = theme_minimal(),
+             legend = "right")
+```
+
+```{r}
+fviz_silhouette(res.fanny, palette = "jco",
+                ggtheme = theme_minimal())
+```
+```{r}
+# Seleccionar el n?mero de conglomerados
+# Indice de Silueta
+asw<-numeric()
+for(h in 2:10){
+  res<-fanny(scale(distritos),h,maxit=5000)
+  asw[h-1]<-res$silinfo$avg.width
+}
+plot(2:10,asw,type="b",xlab="k",ylab="ASW")
+```
+```{r}
+par(mfrow=c(1,3))
+for(h in 2:4){
+  res=fanny(scale(distritos),h)
+  plot(res,which.plots=2)
+}
+par(mfrow=c(1,1))
+```
+
+```{r}
+library(fpc)
+
+# Indice de Calinski-Harabasz
+ch<-numeric()
+for(h in 2:10){
+  res<-fanny(scale(distritos),h,maxit=5000)
+  ch[h-1]<-calinhara(scale(distritos),res$clustering)
+}
+plot(2:10,ch,type="b",xlab="k",
+ylab="Criterio de Calinski-Harabasz")
+```
+#########################################################
+#  Métodos Jerarquicos                                  #
+#########################################################
+
+HCLUSTER
+
+AGNES  -> Aglomerativo
+ARIANA  -> 
+
+
+Algoritmo aglomeraticos , me dan 2 soluciones y me lo puedo expresar en un dendograma ( es el orden en que se van acumulando las observaciones en el conglomerado).
+
+
+Si se tiene 2 conglomerados , y los voy agrupando de acuerdo a su singularidad, se aplica el metodo de enlace, para que un conglomerado sea representado se usa el enlace.
+
+#-------------------------------------------------------#
+#  Cluster Jer?rquico Aglomerativo                      #
+#-------------------------------------------------------#
+
+```{r}
+# Usando el enlace de Ward
+res.hc=hclust(dist(scale(distritos)),method="ward.D") # Se muestra el metodo de enlace "word.D"
+plot(res.hc)
+```
+Se cortaba en e  dendograma en un grupo, si se corta en 20 se tiene 2 conglomerado
+
+```{r}
+# Usando el enlace de Ward
+res.hc=hclust(dist(scale(distritos)),method="single") # Se muestra el metodo de enlace "single"
+plot(res.hc)
+```
+Es dificil hacer un analisis visual, para determinar cual conglomerado es el adecuado, se requiere definir un coeficiente que me indique que tan bien conformado estan dendograma en la grafica. 
+
+-------------
+Para identificar el punto de corte, se usaba el indice de silueta
+
+```{r}
+# Cortando el dendrograma considerando cuatro conglomerados
+(res.hc4=cutree(res.hc, k=4))  # cortar el conglomerado en 4 lugares sin importar la distancia , se le puede ingresar el parametro "h" que es la altura.
+```
+```{r}
+library(factoextra)
+fviz_dend(res.hc, cex = 0.5, k = 4, palette = "jco")
+```
+la funcion  hclust() no me puede distinguir entre 2 dendogramas cual es el mejor con  funcion de enlace distintas.
+
+```{r}
+#Clustering jerarquico aglomerativo usando Agnes
+library(cluster)
+
+# Usando el enlace simple
+res.hc.s=hclust(dist(scale(distritos)),method="single")
+plot(res.hc.s)
+```
+
+```{r}
+## Comparacion de enlaces
+# Enlace de Ward
+res.coph <- cophenetic(res.hc) # Distancia cofenetica
+cor(dist(scale(distritos)), res.coph) # Correlacion entre la distancia cofen?tica y la original
+```
+
+```{r}
+# Enlace Simple
+res.coph <- cophenetic(res.hc.s) # Distancia cofenetica
+cor(dist(scale(distritos)), res.coph) # Correlacion entre la distancia cofen?tica y la original
+
+```
+CON EL ENLACE DE WORD SE OBTIENE UN MEJOR VALOR, PERO NO SE PUEDE VALIDAR EN EL CODIGO
+
+#-------------------------------------------------------#
+#  AGNES                                                #
+#-------------------------------------------------------#
+
+```{r}
+res.agnes.single = agnes(scale(distritos), method="single") # Se indica el tipo de enlace
+res.agnes.single
+plot(res.agnes.single)
+```
+En el grafico aparece el coeficiente de aglomreacion de 0.6
+```{r}
+res.agnes.ward=agnes(scale(distritos),method="ward")
+res.agnes.ward
+plot(res.agnes.ward)
+
+```
+En el grafico aparece el coeficiente de aglomreacion de 0.92, por lo tanto el de WORD es mejor para la aglomeración.
+
+Pero deberia probarse al menos otros enlaces
+
+```{r}
+# Usando matriz de disimilaridad
+diss.distritos=daisy(scale(distritos))
+res.agnes.ward2 = agnes(diss.distritos,method="ward")
+
+# Determinando el n?mero ?ptimo de conglomerados
+# Indice de Silueta
+par(mfrow=c(1,3))
+for(h in 2:4){
+  conglomerados=cutree(res.agnes.ward2,k=h)
+  plot(silhouette(conglomerados,diss.distritos))
+}
+par(mfrow=c(1,1))
+```
+EL grafico de siluetas me indica que son 2 conglomerados
+
+```{r}
+fviz_dend(res.agnes.ward2, cex = 0.5,
+          k = 2, 
+          palette = "jco" 
+)
+```
+
+#-------------------------------------------------------#
+#  Algoritmo Divisivo (DIANA)                           #
+#-------------------------------------------------------#
+DIANA es un algoritmo de tipo divisivo, 
+
+```{r}
+res.diana=diana(scale(distritos))
+res.diana
+plot(res.diana)
+```
+
+```{r}
+# Usando matriz de disimilaridad
+diss.distritos=daisy(scale(distritos))
+res=diana(diss.distritos)
+
+# Determinando el n?mero ?ptimo de conglomerados
+# Indice de Silueta
+par(mfrow=c(1,3))
+for(h in 2:4){
+  conglomerados=cutree(res,h)
+  plot(silhouette(conglomerados,diss.distritos))
+}
+
+```
+
+```{r}
+fviz_dend(res.diana, cex = 0.5,
+          k = 2, 
+          palette = "jco" 
+)
+```
+
+
+#########################################################
+#  DBSCAN                                               #
+#########################################################
+
+```{r}
+data("multishapes")
+df <- multishapes[, 1:2]
+df
+```
+# Se aplica la tecnica de k medias para buscar 5 conglomerados
+```{r}
+set.seed(123)
+km.res <- kmeans(df, 5, nstart = 25) 
+km.res
+```
+
+```{r}
+fviz_cluster(km.res, df,  geom = "point", 
+             ellipse= FALSE, show.clust.cent = FALSE,
+             palette = "jco", ggtheme = theme_classic())
+```
+La tecnica de las k medias trabaja con las distancias
+
+```{r}
+library("fpc")
+library(dbscan)
+set.seed(123)
+# no es necesario estandarizarlo el dataset
+db <- dbscan::dbscan(df, 
+                  eps = 0.15, # radio de la vecindad
+                  MinPts = 5) # minimo numero de puntos con radio eps
+# los valores eps y MinPts son valores que se tiene que ir calibrando
+print(db)
+```
+Los que aparecen como 0 son observaciones que no van a ningun conglomerados
+
+```{r}
+# Graficar los resultados de DBSCAN
+library("factoextra")
+fviz_cluster(db, data = df, stand = FALSE,
+             ellipse = FALSE, show.clust.cent = FALSE,
+             geom = "point",palette = "jco", ggtheme = theme_classic())
+```
+
+```{r}
+# Valor optimo de eps
+dbscan::kNNdistplot(df, k =  5)
+abline(h = 0.15, lty = 2)
+```
+Visualmente se escoge donde la curva se desdobla
+```{r}
+# Ejemplo de Distritos
+dbscan::kNNdistplot(scale(distritos), k =  2)
+abline(h = 1.45, lty = 3)
+```
+No queda claro cual es el punto optimo, aprox 1.45
+
+```{r}
+set.seed(123)
+res.db <- dbscan::dbscan(scale(distritos), 
+                  eps = 1.45, # radio de la vecindad
+                  MinPts = 2) # m?nimo n?mero de puntos con radio eps
+print(res.db)
+```
+Aca aparecen los 3 conglomerados
+
+```{r}
+fviz_cluster(res.db, data = distritos, stand = FALSE,
+             ellipse = TRUE, show.clust.cent = FALSE,
+             geom = c("point","text"),palette = "jco", 
+             ggtheme = theme_classic(),
+             labelsize = 8,
+             ellipse.type = "convex")
+
+```
+Esta es la solucion de DBSCAN
+
+
+
+
+
+
