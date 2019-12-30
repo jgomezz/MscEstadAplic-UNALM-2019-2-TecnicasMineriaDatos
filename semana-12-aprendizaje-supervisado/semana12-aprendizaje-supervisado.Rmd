@@ -1,0 +1,274 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+##Aprendizaje supervisado
+
+Objetivo : diferenciar entre machine learning y aprendizaje supervisado.
+
+Es el aprendizaje estadistico, todo proceso de aprendizaje a partir de datos, esta enfocado hacia el area de estadistico, se aplican metodos estadisticos
+
+A este conjunto de datos , se le llama conjunto de entrenamiento, porque ayuda a estimar parametros, extraer relacion entre las variables, se asume que hay un problema de inferencia
+
+Se busca encontrar una funcion predictiva (prediccion), de modo que esta funcion me permita evaluar nuevos comportamiento
+
+La variable a predecir son  veces son cualitativas y cuantitativas
+
+¿Cuál es el objetivo del aprendizaje supervisado?
+
+$$ Y = f(x) + \epsilon_i$$
+Parte del comportamiento de Y puede ser explicada por otras variables 
+
+f(Cx) : componentes sistematico y deterministico 
+$\epsilon_i$  : componente aleatorio, que es una variable aleatoria 
+
+$$ \epsilon_i  \sim  f_{\epsilon_i} $$
+
+$$ E(\epsilon_i) = 0 $$
+
+
+En mineria de datos nos vamos a enfocar en f(x), la razón es por:
+
+- Predecir 
+
+- Inferencia
+
+Prediccion
+----------
+
+Y estimado  = f(x) estimado
+
+
+Hay 2 terminos que influyen en la precision de Y estimado como prediccion de Y : El error reduccible y el error irreducible
+
+- Error reducible : se relaciona la estimacion de $\^f$ de f, se reduce al usar la tecnica apropiada del aprendizaje supervisado
+
+-  Error irreducible : no se puede eliminar, proviene del termino $\epsilon_i$ , esta relacionado con las variables no observadas que influyen en la respuesta y posible aleatoriedad de la situación.
+
+
+Los errores estudentizado se usa para evaluar las hipotesis y realizar inferencias
+
+INFERIR :
+Cuando voy a inferir en aprendizaje supervisado me interesa calcular el valor de $\beta_0$ y $ , la funcion f no se usa para hacer predicciones , sino para entender , es decir para explicar o describir las relaciones con las variables dependientes
+
+
+Diferencia entre aprendizaje estadístico y aprendizaje automatico:
+=================================================================
+
+- Tiene en comun que es aprender a partir de los datos
+
+- Encontrar la funcion f(X)
+
+- En machine learning solo te interesa predicciones.
+
+- Los algoritmos son mas importante en aprendizaje automatico
+
+- Los metodos y modelos son mas importantes en aprendizaje estadistico
+
+
+Regresion y Clasificación
+=========================
+
+Dependiendo de la naturaleza de la variable dependientes, es de tipo numerica ( escala quantitativa) , estamos hablando de un problema de regresion. Si es de tipo de categoria (escala qualitativa) se habla de un problema de clasificación.
+
+Regresion logistica, regresion nominal son de tipo de "Clasificacion"
+
+
+Aprendizaje Supervisados ( desde el punto de vista estadistico)
+========================
+
+- Hacer predicciones precisas de nuevos datos
+
+- Entender , inferir entre la variable respuesta y las variables predictoras.
+
+-  La variable Y va a servir para saber que tan bueno ha sido la estimacion de Y.
+
+Para estimar los betas podermos usar los metodos parametricos
+
+Metodos parametricos
+---------------------
+Se basa en un supuesto del modelo de antemano, con parametros ya establecidos
+
+La regresion lineal multiple tambien se usa para relacionar comportamiento no lineales , por ejemplo x al cuadrado.
+
+La estimacion de un modelo parametrico se divide en 2 etapas:
+
+-  Seleccionar la forma de la funcion f
+
+- Estimar los parametros usando los datos de entrenamiento
+
+Metodos no parametricos
+-----------------------
+
+Se busca una estimacion de f que se acerca a los datos, pero no se hacen suposiciones explictias sobre la f
+
+
+
+Los parametricos son mas faciles de  interpretados
+Los parametricos no requieren muchos datos
+Los parametricos son los mas complejos
+Los parametricos se hacen mas supuesto
+
+Metodos parametricos
+
+
+Metodos no parametricos
+- Se pueden sobreajustar, tambien ajusta el error y lo sigue
+- No se hacen suposiciones
+- A menudo da una buena prediccion
+
+
+Precision de la prediccion vs interpretabilidad
+===============================================
+
+modelos inflexibles : hay una gran restriccion de la forma
+
+ - regresion laso, Ridge
+
+modelos flexibles : no tienen tanta restriccion
+
+ - Vecino K cercanos
+ 
+Sobreajuste : modelos muy complejos
+
+Subajuste : modelos demasiado simples
+ 
+
+
+```{r}
+(2)^2 + rnorm(1,0,2)
+```
+
+f(x)
+
+Si es explicativa , me interesaria calcular f(x) estimada
+
+Se asume 
+
+Hiperparametro : es la cantidad de parametros que va a tener el modelo y lo definimos nosotros, no el modelo.
+
+
+caracteristica de f
+
+- sesgo : diferencia entre el valor obtenido de f y el valor esperado de f
+
+- variablidad : diferencia entre los predicciones
+
+
+Ejemplo:
+-------
+
+Si f(x) =  $x^2$
+
+1er Caso :Si tenemos [0,2] , se obtiene E(f estimado) = 1 entonces el sesgo es = 0
+
+2do Caso: Si tenemos [1,1] , se obtiene E(f estimado) = 1 entonces el sesgo es = 0
+
+Los variables mas complejos tienen mucha variabilidad, para los casos mencionados anteriormente e 1er caso tiene mayor variabilidad ( relacionado a la varianza)
+
+Bonda de ajuste: Se tiene una suposicion sobre el modelo y buscas como se ajusta al modelo
+
+Funcion perdida
+===============
+
+  
+  
+  
+MSE de entrenamiento
+====================
+
+MSE de entranimiento y MSE de prueba
+
+$\backslack{x}$
+
+
+
+
+¿podemos usar los datos de capacitación MSE para elegir un modelo?
+No es recomendable
+
+- Al aumentar los datos en el entrenamiento, el error disminuye
+- Al aumentar los parametros , aumenta la dispersion de los datos predichos
+
+
+Revista indexada : Latin index
+
+Concluir:
+========
+
+
+- Al aumentar los datos de entrenamiento, el error disminuye para predecir
+
+- Al aumentar los datos de pruebas, el error aumenta
+
+
+Dejar de evaluar el modelo con los datos de entrenamiento.
+
+Bootstrap : remuestreo para usarlo como datos de pruebas
+
+
+Sesgo y Varianza
+================
+
+
+
+
+El error cuadratico medio 
+
+
+Bias -- sesgo
+            2                                                              2
+E[(Y- f(x0)) ]  = Var(error) + Var(f estimado(x0)) + [bias( f estimado x0)]
+
+sesgo = diferencia entre el valor y la media
+
+
+
+varian poco los parametros, todas las funciones son malas, porque el sesgo en grande
+
+
+El modelo con polinomio 2, se caracteriza x sesgo pequeño
+
+Al aumentar el grado del polinomio aumenta la variabilidad.
+
+
+
+Se debe usar el error de pruebas, se debe tener 
+
+
+
+Dibugo de sesgo
+
+
+grafico 1 :   En el equilibrio entre complejidad y variabilidad. no se tiene el sesgo 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

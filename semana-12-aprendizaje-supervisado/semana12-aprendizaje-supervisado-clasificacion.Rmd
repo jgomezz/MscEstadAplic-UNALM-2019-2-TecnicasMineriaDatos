@@ -1,0 +1,74 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Clasificacion
+=============
+
+Es un caso de clasificacion puedes ayudar 
+
+          1;
+$Y_i$ = {
+          0;
+
+f(x) estimado = pi estimado  = 0.70
+
+Cual es el Y estimado
+
+                    1;  pi estimado > C
+$Y_i$ estimado  = {      
+                    0;  pi estimado < C
+                    
+                    
+- Regresion logistica te dan la probabilidad, pero no el Y
+
+- Arboles de clasificación te dan el valor predicho de Y pero no la probabilidad
+
+A veces interesa conocer mas las clases o la probabilidad
+
+En el caso de bancos te interesa saber el score de que un usuario se vuelva moroso
+
+Que tan probable es que un usuario se vaya de una empresa
+
+En el caso de un spam , te interesa que correo no esta en la bandeja de spam, te interesa la clasificacion final
+
+
+Definir algun score que me permite medir el rendimiento del modelo 
+
+La forma mas simple es realizar un clasificacion binaria usando la matriz de confusion
+
+              Observador
+           -------------------
+           |        |
+           |  Y= 1  |  Y = 0
+    -------------------------
+           |        |
+  Yest = 1 |        |   X
+    -------------------------
+           |        |
+  Yest = 0 |   X    |
+    -------------------------
+    
+Los 2 X suman la funcion de perdida
+
+
+Error = ( Falsos Negativos + Falsos Positivos) / N
+
+Error = ( FN + FP ) / N
+
+
+Accuracy = 1 - Error   = 
+
+Error = ( Verdaderos Negativos + Verdaderos Positivos) / N
+
+Error = ( TP + TN ) / N
+
+
+
+
+
+
+
+
+
