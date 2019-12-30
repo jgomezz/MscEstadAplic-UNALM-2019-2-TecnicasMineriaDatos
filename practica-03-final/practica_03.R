@@ -49,6 +49,8 @@ summary(credit)
 ##  2.-  Exploracion de datos
 #############################################
 
+library(agricolae)
+
 # FLG_MIGRA : Indica si una empresa ha sido declarado en Default
 ni    <- table(credit$FLG_MIGRA)
 pi    <- round(prop.table(table(credit$FLG_MIGRA))*100,1)
@@ -58,7 +60,6 @@ barplot(pi, main="Distribución de Empresas en Default",
         col="blue",xlab="Default",ylab="Porcentaje")
 
 # SEGMENTO_CONSTRUCCION
-library(agricolae)
 ni    <- table(credit$SEGMENTO_CONSTRUCCION)
 pi    <- round(prop.table(table(credit$SEGMENTO_CONSTRUCCION))*100,1)
 tabla <- rbind(ni,pi)
@@ -66,8 +67,26 @@ tabla
 barplot(pi, main="Distribución de Empresas por segmento", 
         col="blue",xlab="Default",ylab="Porcentaje")
 
+# VENTAS
+tabla <- (table.freq(hist(credit$VENTAS,plot=FALSE)))  # "Sturges"
+tabla
+h1<-hist(credit$VENTAS, xlab="Ventas",
+         ylab="Número de empresas", 
+         main = "Distribución de Ventas")
 
+# PASIVOS
+tabla <- (table.freq(hist(credit$PASIVOS,plot=FALSE)))  # "Sturges"
+tabla
+h1<-hist(credit$PASIVOS, xlab="Pasivos",
+         ylab="Número de empresas", 
+         main = "Distribución de Pasivos")
 
+# DEUDA TOTAL
+tabla <- (table.freq(hist(credit$DEUDA_TOTAL,plot=FALSE)))  # "Sturges"
+tabla
+h1<-hist(credit$DEUDA_TOTAL, xlab="Deudas Total",
+         ylab="Número de empresas", 
+         main = "Distribución de Deudas Total")
 
 
 #############################################
