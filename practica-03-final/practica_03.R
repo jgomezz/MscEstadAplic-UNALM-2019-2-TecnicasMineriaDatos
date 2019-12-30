@@ -20,25 +20,58 @@ library(e1071)
 library(gbm)
 library(party)
 library(partykit)
-
-# Base de datos resumida
-#credit2<- read_dta("D:/Dropbox/Cursos/Ad-hoc/Intercorp/Modelamiento Predictivo/Compartido/Datos/credit.dta")
-
 library("readxl")
+
+#############################################
+##  1.- Lectura de datos
+#############################################
 credit <- read_excel("practica-03-final/base_final.xlsx", sheet = "Hoja2")
-head(credit)
 
+str(credit)
 
-# Base de datos con variables principales
-#data(credit)
-#help(credit)
-
+# Transformamos a factor las variables no continuas
 credit$FLG_MIGRA <- as.factor(credit$FLG_MIGRA)
 credit$FAD_1 <- as.factor(credit$FLG_MIGRA)
 credit$DELTA_DE_ENTIDADES_1	<- as.factor(credit$DELTA_DE_ENTIDADES_1)
 credit$SEGMENTO_CONSTRUCCIÓN	<- as.factor(credit$SEGMENTO_CONSTRUCCIÓN)
 credit$MONTO_APROBADO	<- as.factor(credit$MONTO_APROBADO)
 credit$RANGO_DE_PD	<- as.factor(credit$RANGO_DE_PD)
+
+str(credit)
+head(credit)
+names(credit)
+summary(credit)
+
+#############################################
+##  2.-  Exploracion de datos
+#############################################
+
+# Default : FLG_MIGRA
+ni<-table(credit$FLG_MIGRA)
+pi<-round(prop.table(table(credit$FLG_MIGRA))*100,1)
+tabla<-t(rbind(ni,pi))
+tabla
+barplot(pi, main="Distribución de Empresas en Default", 
+        col="blue",xlab="Default",ylab="Porcentaje")
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Base de datos con variables principales
+#data(credit)
+#help(credit)
+
+
+
 
 
 # Formato de datos
