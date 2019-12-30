@@ -60,6 +60,11 @@ barplot(pi, main="Distribución de Empresas en Default",
 
 
 
+#############################################
+##  N.- FIN DE PRACTICA 03
+#############################################
+
+
 
 
 
