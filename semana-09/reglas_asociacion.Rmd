@@ -1,0 +1,283 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+groceryrules <- apriori(groceries, parameter = list(support =0.006,
+			 confidence = 0.25, minlen = 2))
+
+groceryrules
+
+```
+
+
+
+```{r}
+#_______________________________________________________
+# Paso 3: Evaluar el modelo
+#_______________________________________________________
+
+summary(groceryrules)
+
+```
+Se observa que se miden al menos entre 2 a 4 itemsets
+
+- La mayoria de la reglas tienes 297 itemsets ( 3 reglas)
+- Existen 150 itemsets para 2 reglas
+- Existen 16 itemsets para 4 reglas
+
+{item1}  ---> {item2}  NO
+{item1, item2}  ---> {item3, item4, item5}  SI
+
+
+¿Que mide el soporte?
+
+Soporte --> numero de frecuencias de un item
+Confianza --> Una probabilidad condicional
+
+Las medidad de calidad me sirven para establecer lo minimo y maximo
+
+#####################################################################
+support           confidence          lift            count      
+ Min.   :0.006101   Min.   :0.2500   Min.   :0.9932   Min.   : 60.0  
+ 1st Qu.:0.007117   1st Qu.:0.2971   1st Qu.:1.6229   1st Qu.: 70.0  
+ Median :0.008744   Median :0.3554   Median :1.9332   Median : 86.0  
+ Mean   :0.011539   Mean   :0.3786   Mean   :2.0351   Mean   :113.5  
+ 3rd Qu.:0.012303   3rd Qu.:0.4495   3rd Qu.:2.3565   3rd Qu.:121.0  
+ Max.   :0.074835   Max.   :0.6600   Max.   :3.9565   Max.   :736.0 
+
+
+#####################################################################
+
+En el lift se observa que hay reglas muy asociadas
+
+
+#----------------------------------------------------------------------------------
+# Interpretaciones :
+# ---------------------------------------------------------------------------------
+# - La distribuci?n para la longitud de las reglas (rule length distribution ) muestra
+#   el n?mero de reglas existentes para cierta cantidad de items. Por ejemplo, en 
+#   la salida se observa que 150 reglas tienen solo dos items, mientras que 297 tienen
+#   tres, y 16 tienen 4.  Adem?s se muestra un resumen estad?stico.
+# - El resumen de las medidas de calidad para las reglas (rule quality measures) es 
+#   importante para evaluar si los par?metros fijados son adecuados.  Por ejemplo, si
+#   la mayor?a de las reglas tuvieran un soporte y confianza muy cercana al m?nimo de
+#   los umbrales fijados eso implicar?a que quiz? se fij? un l?mite demasiado alto.
+#-----------------------------------------------------------------------------------
+
+
+```{r}
+# Mostrar las tres primeras reglas de asociacion
+inspect(groceryrules[1:3])
+
+```
+Se muestren 3 reglas en forma aleatoria
+
+La media 
+
+El lift es mayoar a 1.56 y los datos estan asociados. Esto sucede en 2 reglas que son muy relevantes
+
+Un insight es una reglas que no es obvia y puede usar en Marketing . Tiene que conocer el negocio 
+
+#----------------------------------------------------------------------------------
+# Interpretaciones :
+# ---------------------------------------------------------------------------------
+# - La primera regla puede ser leida de la siguiente forma: "Si un cliente compra
+#   plantas en macetas (potted plants), tambi?n comprar? leche entera (whole milk).
+#   Esto se da con un soporte de 0.007 y una confianza de 0.400, lo cual implica
+#   que esta regla cubre el  0.7% de las transacciones y es cierta para el 40% de las
+#   compras que involucren plantas en maceta.
+
+# - El valor del lift nos dice que tanto m?s probable es que un cliente compre leche
+#   entera en relaci?n al cliente t?pico, sabiendo que compr? plantas en macetas. Dado que se
+#   sabe que cerca del 25.6% de los clientes compran leche entera (soporte), mientras
+#   que un 40% de los clientes compran plantas en maceta (confianza), es posible calcular
+#   el valor del lift 0.40/0.256 = 1.56.
+# - ?Es razonable la regla anterior? Clasificar las reglas en: accionables/triviales/inexplicables
+#-----------------------------------------------------------------------------------
+
+
+#_______________________________________________________
+# Paso 4: Mejorar la performance del modelo
+#_______________________________________________________
+
+```{r}
+# Mostrar las 5 reglas con mayor lift
+inspect(sort(groceryrules, by = "lift")[1:5])
+
+```
+
+#----------------------------------------------------------------------------------
+# Interpretaciones :
+# ---------------------------------------------------------------------------------
+# - La primera regla, con un lift de aprox. 3.96, implica que las personas que compran hierbas son 
+#   casi cuatro veces m?s propensos a comprar hortalizas que el cliente t?pico
+#   (?alg?n tipo de guiso?)
+#     
+# - La regla n?mero dos es tambi?n interesante. Crema batida es m?s de tres veces m?s probable
+#   de ser encontrada en una canasta de compras con bayas en comparaci?n con otras canastas.
+#   (?alg?n tipo de postre?)
+#-----------------------------------------------------------------------------------
+
+```{r}
+inspect(sort(groceryrules, by = "confidence")[1:5])
+
+```
+
+
+# Otra opcion es enfocarse en una regla
+
+```{r}
+# Subconjuntos de reglas
+berryrules <- subset(groceryrules, items %in% "berries")
+inspect(berryrules)
+```
+#----------------------------------------------------------------------------------
+# Uso de subset() :
+# ---------------------------------------------------------------------------------
+# - La palabra clave items empareja un item que aparezca en alguna regla. Es posible delimitar
+#   que esta ocurra solo a la izquierda o derecha usando lhs y rhs.
+
+    lhs --> busqueda a la izquerda
+    
+
+# - El operador %in% significa que al menos uno de los items debe ser encontrado, de la lista de
+#   items definidos.  Si se desea encontrar reglas con berries y yogurt,deber?a escribirse
+#   %in%c("berries", "yogurt").
+
+
+
+# - Existen otros operadores disponibles para emparejamiento parcial (%pin%) y emparejamiento
+#   completo (%ain%). Emparejamiento parcial permite encontrar ambos: citrus fruit y tropical fruit
+#   en una sola busqueda: items %pin% "fruit". Emparejamiento completo requiere que todos los items
+#   listados est?n presentes. Por ejemplo, items %ain% c("berries", "yogurt") encuentra solo las
+#   reglas con yogurt y berries al mismo tiempo.
+
+# - Los subconjuntos tambien pueden ser imitados por soporte, confianza o lift. Por ejemplo,
+#   confidence > 0.50.
+# - Los criterios de emparejamiento pueden ser combinados con operadores de R estandar y logicos como 
+#   y (&), o (|), y negacion (!).
+#-----------------------------------------------------------------------------------
+
+
+
+
+
+
+
+# Otras medidas
+
+# Revisar: https://www.jstatsoft.org/article/view/v014i15/v14i15.pdf
+
+```{r}
+
+    
+measures <- interestMeasure(x = groceryrules, measure = c("coverage", "fishersExactTest"), 
+                            transactions = groceries)
+summary(measures)
+```
+
+```{r}
+  
+# Exportar las reglas obtenidas
+write(groceryrules, file = "groceryrules.csv",
+	sep = ",", quote = TRUE, row.names = FALSE)
+
+```
+
+
+
+
+```{r}
+# Convertir reglas en dataframe
+groceryrules_df <- as(groceryrules, "data.frame")
+head(groceryrules_df)
+```
+# Realizaqr el analisis solo con clientes que hayan comprado mas de un producto
+
+```{r}
+groceries_use <- groceries[basketSizes > 1]
+groceryrules2 <- apriori(groceries_use, parameter = list(support = 0.006,
+                                                    confidence = 0.25, minlen = 2))
+```
+```{r}
+groceryrules2
+```
+
+Tengo 767 reglas 
+
+Reduzco la cantidad de reglas 
+```{r}
+# Visualizaci?n
+rules <- apriori(groceries, parameter =
+                   list(supp = 0.01, conf = 0.5, target = "rules"))
+```
+
+
+```{r}
+library(arulesViz)
+plot(rules)
+```
+
+```{r}
+subrules <- head(sort(rules, by="lift"), 10)
+
+plot(subrules,method="graph",control=list(alpha=1))
+
+```
+```{r}
+
+plot(rules,method="matrix",measure="support")
+
+```
+
+El que tiene mayor intensidad, es el mayor lift
+
+```{r}
+
+plot(rules,method="matrix3D",measure="confidence")
+```
+#########################################################
+#  Ejemplo: BUPA                                        #
+#########################################################
+
+```{r}
+library(discretization)
+load("bupa.rda")
+#bupa <- read.csv(file.choose())
+
+```
+
+```{r}
+
+disc.bupa=chiM(bupa)
+dbupa=disc.bupa$Disc.data
+```
+
+Esta datos es usado para usarlo en metodo de clasificacion 
+
+V1 .. V6 --> centrarme el V1 y V2 
+V7 -> Salida
+
+```{r}
+for (i in 1:7){dbupa[,i]=as.factor(dbupa[,i])}
+dbupa<-as.data.frame(dbupa)
+dbupa.ar<-as(dbupa, "transactions")
+
+```
+
+
+
+
+rules <- apriori(dbupa.ar,parameter =
+                   list(supp = 0.20, conf = 0.9,target = "rules"))
+summary(rules)
+inspect(rules)
+library(arulesViz)
+plot(rules, measure=c("support", "lift"),
+     shading="confidence", interactive=TRUE)
+plot(rules,method="graph",control=list(alpha=1))
+plot(rules, method="graph",
+     control=list(alpha=1,type="items"))
