@@ -1,0 +1,125 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#-------------------------------------------------------------------------#
+# EVALUCION PREDICTIVA DE MODELOS DE CLASIFICACION                        #
+# ------------------------------------------------------------------------#
+# Ejemplo: Cr?ditos de  Banco Alem?n                                      #
+#-------------------------------------------------------------------------#
+
+
+```{r}
+library(caret)
+library(haven)
+library(tidyverse)
+library(Fahrmeir)
+library(ggplot2)
+library(ggpubr)
+library(discretization)
+#install.packages("randomForest")
+library(randomForest)
+library(recipes)
+library(C50)
+library(doParallel)
+library(ranger)
+library(e1071)
+#install.packages("gbm")
+library(gbm)
+#install.packages("party")
+library(party)
+library(partykit)
+```
+
+
+
+```{r}
+library("readxl")
+data <- read_excel("base.xlsx")
+head(data)
+
+```
+
+```{r}
+summary(data)
+```
+
+```{r}
+fintech_data <- read.csv("registros_personas.csv")
+#head(fintech_data)
+#dim(fintech_data)
+#str(fintech_data)
+summary(fintech_data)
+```
+```{r}
+head(fintech_data)
+```
+
+```{r}
+summary(credit)
+
+```
+
+
+
+
+```{r}
+# Base de datos resumida
+#credit2<- read_dta("D:/Dropbox/Cursos/Ad-hoc/Intercorp/Modelamiento Predictivo/Compartido/Datos/credit.dta")
+
+# Base de datos con variables principales
+data(credit)
+help(credit)
+
+# Formato de datos
+glimpse(credit)
+
+# credit2$y<- if_else(credit2$y == 1, "Solvente", "No solvente")
+# credit2$y <- as.factor(credit2$y)
+
+```
+
+#################################################
+# Divisi?n de los datos en entrenamiento y test #
+#################################################
+
+```{r}
+
+set.seed(123)
+
+# Se crean los ?ndices de las observaciones de entrenamiento
+train <- createDataPartition(y = credit$Y, p = 0.75, list = FALSE, times = 1)
+datos_train <- credit[train, ]
+datos_test  <- credit[-train, ]
+
+```
+
+```{r}
+# Se verifica la distribuci?n de la variable respuesta
+prop.table(table(credit$Y))
+```
+```{r}
+prop.table(table(datos_train$Y))
+```
+```{r}
+prop.table(table(datos_test$Y))
+
+```
+#################################################
+# Preprocesamiento                              #
+#################################################
+
+EL objeto recipe almacena todo lo que se le aplica
+
+```{r}
+# Crear un objeto del tipo recipe
+# Ver: http://rstudio-pubs-static.s3.amazonaws.com/349127_caf711562db44e10a65c1fe0ec74e00c.html
+objeto_recipe <- recipe(formula = Y ~ Cuenta + Mes + Ppag +
+                          Uso + DM,
+                        data =  datos_train)
+
+objeto_recipe
+
+```
+
