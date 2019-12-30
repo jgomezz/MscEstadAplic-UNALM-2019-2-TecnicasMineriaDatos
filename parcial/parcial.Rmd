@@ -1,0 +1,120 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+
+library(smbinning)
+
+```
+
+```{r}
+load("~/personal/master/MscEstadAplic-UNALM-2019-2-TecnicasMineriaDatos/parcial/smbsimdf1.RData")
+head(smbsimdf1)
+```
+# Pregunta 5
+```{r}
+data <- smbsimdf1[,c("cblineut","dep","dc")]
+str(data)
+```
+
+Pregunta 5
+```{r}
+d <- mahalanobis(data, colMeans(data), cov(data))
+#barplot(d, main="Mahalanobis")
+which.max(d)
+
+```
+```{r}
+smbsimdf1[2785,]
+```
+# Pregunta 4
+
+```{r}
+# Densidad Local
+library(DMwR)
+lof=lofactor(data,10)
+lof
+smbsimdf1[order(lof,decreasing=T)[1:10],]
+```
+4
+
+```{r}
+#Discretizacion por entropia
+library(discretization)
+
+# primero pasar las columnas que quieras discretizar, seguido de las  clases 
+# Criterio de parada, solo se acepta un parametro
+# se coloca los atributos que se van a discretizar y 
+# al final las clases 
+DM_entropia = mdlp(data = smbsimdf1[,c("cblineut", "fgood")])
+```
+
+
+```{r}
+DM_entropia$cutp
+```
+
+# Pregunta 3
+
+```{r}
+nbins<-nclass.FD(smbsimdf1$dc) # Usando Friedman-Diaconis
+nbins
+```
+
+```{r}
+smbsimdf1$dc_dia<-discretize(smbsimdf1$dc,method="interval", breaks= nbins) 
+table(smbsimdf1$dc_dia)
+```
+
+# Pregunta 2
+
+```{r}
+summary(smbsimdf1)
+
+```
+Para ver la cantidad  datos perdidos 
+```{r}
+#Para ver que columnas tienen valores perdidos
+which(colSums(is.na(smbsimdf1))!=0)
+```
+#Para ver el porcentaje de valores perdidos en las columnas
+```{r}
+colmiss=c(2,3,18)
+per.miss.col=100*colSums(is.na(smbsimdf1[,colmiss]))/dim(smbsimdf1)[1]
+per.miss.col
+```
+
+```{r}
+library(ranger)
+library(laeken)
+library(robustbase)
+library(VIM)
+aggr(smbsimdf1,numbers=T, sortComb=TRUE, sortVar=TRUE, only.miss=TRUE)
+```
+
+
+```{r}
+1 - 0.7296
+```
+
+
+# Pregunta 1
+
+
+```{r}
+boxplot(smbsimdf1$dc)
+
+```
+```{r}
+#smbsimdf1$dc
+
+which.max(smbsimdf1$dc)
+
+```
+
+
+
+
