@@ -1,0 +1,138 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+---
+
+Considerando que el objetivo principal del estudio es construir un modelo de clasificaci´on que permita predecir si un cliente no ser´a solvente, discretice la variable amount considerando:
+
+
+```{r}
+banco <-read.dta("credit.dta")
+banco
+```
+
+```{r}
+summary(banco)
+```
+Se verifica que no hay datos perdidos
+
+## (a) Intervalos de igual amplitud utilizando la regla de Scott
+
+
+```{r}
+library(arules)
+nbins<-nclass.scott(banco$amount) # Usando Scott
+nbins
+
+```
+```{r}
+banco$amount_dis<-discretize(banco$amount,method="interval", breaks= nbins) 
+table(banco$amount_dis)
+```
+
+## (b) Metodo ChiMerge con α = 0,01
+
+
+```{r}
+library(discretization)
+banco_chim = chiM(data = banco[,c("amount","y")],alpha = 0.01)
+
+```
+
+```{r}
+banco_chim$cutp
+```
+Tabla de frecuencias
+```{r}
+table(banco_chim$Disc.data)
+```
+
+Tabla de frecuencias
+```{r}
+banco_chim$amount_chim <- banco_chim$Disc.data[,1]
+table(banco_chim$amount_chim)
+```
+
+## (c) Por entropıa.
+```{r}
+DM_entropia = mdlp(data = banco[,c("amount","y")])
+
+```
+
+```{r}
+DM_entropia$cutp 
+```
+
+```{r}
+banco$amoount_dentr <- DM_entropia$Disc.data[,1] 
+```
+
+```{r}
+table(banco$amoount_dentr)
+```
+
+### Pregunta 2
+
+
+```{r}
+musicas_escuchadas <- read.transactions("lastfm.csv",
+                               sep = ",",
+                               format = "single",
+                               cols = c(1,2))
+```
+
+
+```{r}
+basketSizes <- size(musicas_escuchadas)
+basketSizes
+```
+```{r}
+summary(basketSizes)
+
+```
+```{r}
+quantile(basketSizes, probs = seq(0,1,0.1))
+
+```
+
+```{r}
+library(ggplot2)
+ggplot(data.frame(count = basketSizes)) +
+  geom_density(aes(x=count))
+```
+```{r}
+# Mostrar un subconjunto de transacciones (p. ej. las cinco primeras)
+inspect(musicas_escuchadas[1:5])
+```
+```{r}
+# Mostrar el soporte (proporci?n de transacciones) de un item (p. ej. de los tres primeros)
+itemFrequency(musicas_escuchadas[, 1:3])
+```
+
+```{r}
+# Visualizar el soporte de los items (p. ej. de aquellos items con una proporcion mayor a 0.10)
+itemFrequencyPlot(musicas_escuchadas, support = 0.01)
+```
+```{r}
+musicas_escuchadas_rules <- apriori(musicas_escuchadas, parameter = list(support =0.01,
+                                                    confidence = 0.4, minlen = 2))
+
+musicas_escuchadas_rules
+```
+
+```{r}
+# Subconjuntos de reglas
+musicas_escuchadas_rules_tmp <- subset(musicas_escuchadas_rules, lift > 3)
+inspect(musicas_escuchadas_rules_tmp)
+```
+
+```{r}
+# Subconjuntos de reglas
+musicas_escuchadas_rules_tmp <- subset(musicas_escuchadas_rules, subset = lhs %pin% "the"  & lift > 4 & confidence > 0.35 & size(lhs)==1)
+inspect(musicas_escuchadas_rules_tmp)
+
+```
+
+
+
