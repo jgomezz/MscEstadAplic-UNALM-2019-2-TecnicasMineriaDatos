@@ -1,0 +1,82 @@
+---
+title: "Examen Final - Técnicas de Minerias de Datos"
+output: html_notebook
+author: "Jaime Gomez Marin"
+---
+
+
+```{r}
+#Lectura de Datos
+library(rpart)
+data(kyphosis)
+#help(credit)
+head(kyphosis)
+```
+```{r}
+#dim(kyphosis)[1]
+#head(kyphosis)
+train_data <- kyphosis[1:65,]
+test_data <- kyphosis[66:81,]
+dim(train_data)
+dim(test_data)
+
+```
+
+
+```{r}
+modelo_logistic <- glm(Kyphosis ~ Age + Number + Start , family=binomial,data=train_data)
+
+# summary(modelo_logistic)
+
+# Valores predichos de Y
+yprob<-predict(modelo_logistic,type="response")
+# Otra forma:
+ypred <- as.numeric(yprob >= 0.5 ); 
+ypred <- factor(ypred, labels = levels(train_data$Kyphosis))
+
+library(caret)
+confusionMatrix(data = ypred,reference = train_data$Kyphosis, positive = "present")
+```
+
+```{r}
+#cauchit
+fmla <- Kyphosis ~ Age + Number + Start
+
+modelo_cauchit<- glm(fmla, family=binomial(link=cauchit),data=train_data)
+summary(modelo_cauchit)
+
+yprob<-predict(modelo_cauchit,type="response")
+ypred <- factor(as.numeric(yprob >= 0.5 ), labels = levels(train_data$Kyphosis))
+
+caret::confusionMatrix(ypred,train_data$Kyphosis, positive = "present")
+```
+
+
+```{r}
+library(naivebayes)
+a<-naive_bayes(Kyphosis ~ Age + Number + Start,data = train_data,usekernel = TRUE)
+pred=predict(a,test_data[,-1])
+confusionMatrix(pred,test_data[,1])
+```
+
+```{r}
+1-0.9375  
+```
+```{r}
+library(class)
+
+k_11 <- knn(train = train_data[,-1],test = train_data[,-1],cl = train_data[,1], k = 11)
+confusionMatrix(k_11,train_data[,1])
+```
+
+```{r}
+library(rpart)
+arbol=rpart(Kyphosis ~ Age + Number + Start,data=train_data,method="class", minbucket=5, cp=0.033)
+pred<-predict(arbol,test_data[,-1],type="class")
+confusionMatrix(pred,test_data$Kyphosis)
+
+```
+```{r}
+1-0.8125
+```
+
