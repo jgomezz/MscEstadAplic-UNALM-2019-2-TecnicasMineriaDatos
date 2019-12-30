@@ -1,0 +1,293 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Instalaci?n de Paquetes
+
+```{r}
+install.packages(c("arules","arulesViz","TSP"),
+                 dependencies = c("Depends"))
+```
+
+
+#########################################################
+#  Ejemplo: Groceries                                   #
+#########################################################
+```{r}
+#_______________________________________________________
+# Paso 1: Obtener y procesar la base de datos
+#_______________________________________________________
+
+# Usando librer?a arules
+library(arules)
+data("Groceries") 
+head(Groceries)
+```
+```{r}
+summary(Groceries)
+```
+
+
+```{r}
+#labels(Groceries)
+```
+```{r}
+help(Groceries)
+```
+El conjunto de Groceries contiene informacion de un mes de un tienda de transacciones que son obtenido a traves de un outlet loca 
+
+
+
+
+```{r}
+# Importando de un archivo .csv y convirtiendo a transacciones
+#groceries <- read.transactions(file = file.choose(),
+#                               sep = ",",
+#                               format = "basket")
+groceries <- read.transactions("groceries.csv", 
+                               sep = ",",
+                               format = "basket")
+```
+
+
+```{r}
+groceries
+```
+
+```{r}
+summary(groceries)
+```
+La densidad, los datos fueron convertido a una matrix de densicdada. Que porcentaje de 1 tiene la matriz
+
+#----------------------------------------------------------------------------------
+# Interpretaciones :
+# ---------------------------------------------------------------------------------
+# El valor de densidad de 0.02609146 (2.6 %) se refieere a la proporcion de celdas
+# en la matriz que son distintas de cero.  Dado que hay 9835 * 169 = 1662115 celdas
+# en la matriz, es posible calcular el n?mero total 1662115 * 0.02609146 = 43367
+# de ?tems comprados en la tienda durante los 30 d?as de funcionamiento
+#-----------------------------------------------------------------------------------
+# En el siguiente bloque de la salidad de summary() se muestran los items m?s frecuentes
+# encontrados en la base de datos de transacciones. Dado que 2513/9835 = 0.2555,
+# podemos determinar que whole milk aparece en un 25.6% de todas las transacciones, 
+# del mismo modo se interpetan el resto de los items frecuentes.
+#-----------------------------------------------------------------------------------
+# Finalmente, se presentan un conjunto de estad?sticas sobre el tama?o de las transacciones,
+# Un total de  2159 transacciones contienen tan s?lo un ?tem, mientras hubo una transacci?n
+# con 32 ?tems. 
+#-----------------------------------------------------------------------------------
+
+Ejemplo:
+
+------------------
+ID | P1 | P2 | P3
+------------------
+ 1 |  1 |  0 |  0
+------------------
+ 2 |  0 |  1 |  0
+------------------
+ 3 |  0 |  0 |  1
+------------------
+
+densidad(M) = 3/9 = 1/3 = 0.3
+
+que tipo de problemas de calidad hay :
+
+
+-----
+
+El item mas frecuente es 2513 y hay  9835 item m entonces 2513/9835 = 0.255516, entonce aparace al 25%
+
+------------
+element (itemset/transaction) length distribution:
+sizes
+   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   26 
+2159 1643 1299 1005  855  645  545  438  350  246  182  117   78   77   55   46   29   14   14    9   11    4    6    1    1 
+  27   28   29   32 
+   1    1    3    1 
+
+------------
+  
+Hay 2159 de compras de un solo itemset
+
+------------
+
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   2.000   3.000   4.409   6.000  32.000
+
+------------
+
+
+Para ver la cantidad de transacciones y items
+```{r}
+dim(groceries)
+```
+
+Cuantos itemset hay en cada transaccion
+```{r}
+basketSizes <- size(groceries)
+basketSizes
+```
+
+
+```{r}
+summary(basketSizes)
+```
+
+```{r}
+quantile(basketSizes, probs = seq(0,1,0.1))
+
+```
+
+El 70% de las transacciones solo tienes 5 item
+
+
+```{r}
+library(ggplot2)
+ggplot(data.frame(count = basketSizes)) +
+  geom_density(aes(x=count))
+```
+El soporte tiene que ser menos al 20%, me ayuda a calibrar mejor
+
+```{r}
+# Mostrar las transacciones
+labels(groceries) # me das las etiqutas de las transacciones
+colnames(groceries)[1:5] # me devuelve el nombre de los items
+```
+```{r}
+
+# Mostrar un subconjunto de transacciones (p. ej. las cinco primeras)
+inspect(groceries[1:5])
+```
+Me lo ordena alfabeticamente
+
+
+El soporte es la proporcion de los itemsets
+```{r}
+# Mostrar el soporte (proporci?n de transacciones) de un item (p. ej. de los tres primeros)
+itemFrequency(groceries[, 1:3])
+```
+Se muestran 3 productos.
+
+```{r}
+# Visualizar el soporte de los items (p. ej. de aquellos items con una proporcion mayor a 0.10)
+itemFrequencyPlot(groceries, support = 0.1)
+```
+
+```{r}
+# Visualizar el soporte de los items (p. ej.de los 20 ?tems con mayor soporte)
+itemFrequencyPlot(groceries, topN = 20)
+```
+El que tiene menor frecuencia es menor a 0.10
+
+
+```{r}
+# Obtener los 20 items mas frecuents
+groceriesFreq <- itemFrequency(groceries)
+summary(groceriesFreq)
+sum(groceriesFreq)
+```
+Se observa el menos frecuente 0.0017% y mas frecuente 25%
+
+#
+
+
+Item mas frecuentes
+
+```{r}
+groceriesCount <- (groceriesFreq/sum(groceriesFreq))*sum(basketSizes)
+summary(groceriesCount)
+orderedgroceries <- sort(groceriesCount, decreasing = T)
+orderedgroceries[1:20]
+```
+
+Item menos frecuentes
+
+```{r}
+groceriesCount <- (groceriesFreq/sum(groceriesFreq))*sum(basketSizes)
+summary(groceriesCount)
+orderedgroceries <- sort(groceriesCount, decreasing = F)
+orderedgroceries[1:20]
+```
+Los patrones estacionarios deben ser retirados : Ejemplo : los turrones de doña pepa, los panetones, son estacionales
+
+
+```{r}
+# Visualizar la matriz de transacciones (p. ej. para las 5 primeras transacciones)
+image(groceries[1:5])
+```
+Cuando hay un punto que se repita en todo la columna, podria ser estacionario
+```{r}
+# Visualizar la matriz de transacciones (p. ej. seleccionar al azar 100 transacciones)
+image(sample(groceries, 100))
+```
+Se saca en forma aleatoria los puntos, y si hubiera una columna de color negro, es probable que sea estacionario
+#----------------------------------------------------------------------------------
+# Interpretaciones :
+# ---------------------------------------------------------------------------------
+# Los puntos deber?an verse dispersos con un patr?n aleatorio.
+# Buscar patrones no aleatorios:
+# - Si un ?tem aparece en todas las transacciones podr?a tratarse de informaci?n que no 
+#   corresponde a un item comprado.
+# - Si se ordenan los items por alg?n criterio, por ejemplo fecha de compra, podr?an
+#   detectarse alg?n comportamiento estacional (Halloween, Navidad, etc.)
+#-----------------------------------------------------------------------------------
+
+#_______________________________________________________
+# Paso 2: Entrenar el modelo con los datos
+#_______________________________________________________
+
+```{r}
+help(apriori)
+
+```
+parameter	
+object of class APparameter or named list. The default behavior is to mine rules with minimum support of 0.1, minimum confidence of 0.8, maximum of 10 items (maxlen), and a maximal time for subset checking of 5 seconds (maxtime).
+
+```{r}
+apriori(groceries)
+```
+Se generaron 0 reglas , la confianza que hemos puesto es muy alta
+
+#----------------------------------------------------------------------------------
+# Comentario :
+# ---------------------------------------------------------------------------------
+# Recordar que por defecto un soporte = 0.1 es usado para generar una regla, es decir
+# que al menos un item debe aparecer en 0.1 * 9385 = 938.5 transacciones. Dado que solo
+# ocho item tienen esta frecuencia, es bastante predecible que no se encuentre ninguna 
+# regla de asociacion.
+# ---------------------------------------------------------------------------------
+# Recomendaciones para fijar un soporte y confianza m?nimo :
+# --------------------------------------------------------------------------------- 
+
+SOPORTE
+# - Pensar en el menor n?mero de transacciones que necesites para considerar que un patr?n 
+#   es interesante. Por ejemplo, si se argumenta que si se compra un art?culo dos veces al d?a
+#  (alrededor de 60 veces en un mes), esto puede ser un patr?n interesante. A partir de ah?,
+#   es posible calcular el nivel de apoyo necesario para encontrar s?lo las reglas que coincidan
+#   con al menos ese n?mero de transacciones. Como 60 de 9835 es aprox. 0.006, se puede establecer
+#   el soporte a partir de este valor.
+
+CONFIANZA
+# - Determinar la confianza m?nima involucra realizar un balance muy delicado.  Por un lado, si la
+#   confianza es es demasiado baja, es posible obtener un n?mero abrumadoramente alto de reglas con
+#   poca fiabilidad (p. ej. pa?ales de bebe son comprados junto con muchos productos). Por otro lado,
+#   si se fija una confianza muy alta, se limitaran a las reglas que son obvias o inevitable, (p. ej.
+#   pa?ales de bebe son comprados junto a biberones o leche para recien nacidos).
+# - El nivel de confianza m?nimo adecuado depende en gran medida de los objetivos del an?lisis.
+#   Si se parte de un valor conservador, siempre se puede reducir para ampliar la b?squeda.
+# - Para este ejemplo se iniciar? con un umbral para la confianza de 0.25, esto indica que para que una
+#   regla de asociaci?n se considere relevante deber?a ocurrir en al menos un 25% de las veces. Esto
+#   ayudar?a a eliminar la mayor?a de reglas poco fiables, al mismo tiempo que permite un cierto margen
+#   para incentivar el comportamiento del cliente con promociones espec?ficas.
+# - Adicionalmente al soporte y la confianza, ayuda fijar minlen = 2  para eliminar reglas que #  contengan menos de dos ?tems.  Esto previene obtener reglas poco interesantes que se generan porque un item 
+#   es comprado muy frecuentemente, por ejemplo {} -> whole milk. Esta regla cumple con el m?nimo de
+#   soporte y confianza porque whole milk es comprada en m?s del 25% de las transacciones, pero 
+#   no brinda un insight accionable. 
+#-----------------------------------------------------------------------------------
+
+```{r}
+
+```
+

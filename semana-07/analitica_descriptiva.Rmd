@@ -1,0 +1,162 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Mineria de datos : encontrar asociacion que tenga relevancia significativa
+
+
+Tecnica de aprendizajes no supervisados , existe 3 reglas:
+
+- Reglas  de Asociacion : Cuando deseo saber que tan frecuentes ocurren los patrones entre los objetos
+- Reglas de Secencia :Detectar secuencia de los eventos, es el orden en que aparecen, los eventos ya son conocidos, es la relacion entre ellos
+- Clustering : cuando deseo reconocer segmentos de objetos que sean similares entre si, para poder segmentar
+
+# Reglas de Asociacion
+
+Son utliles para descubrir relaciones que sean de interes en conjunto de datos
+
+      $$ Regla de Asociacion :  X --> Y $$
+
+Se usa conteo de frecuencia , se forma una base de datos de transacciones que nos sirva para poder encontrar las relaciones
+
+
+Y : conjunto que contiene a todos los objetos
+
+X y Y son mutuamente excluyente
+
+
+              Base de datos de transacciones
+              =============================
+              
+              
+
+
+
+
+
+              Matriz de Transacciones
+              =======================
+              
+----------------------------------------------
+| ID | milk	| bread	| butter | beer |	diapers
+----------------------------------------------
+| 1	| 1	| 1	| 0	| 0	| 0
+----------------------------------------------
+| 2	| 0 | 0	| 1	| 0 | 0
+----------------------------------------------
+| 3	| 0	| 0	| 0	| 1	| 1
+----------------------------------------------
+| 4	| 1	| 1	| 1	| 0	| 0
+----------------------------------------------
+| 5	| 0	| 1	| 0	| 0	| 0
+----------------------------------------------
+
+       {diaper, eggs} ---> {beer}        OK
+       {milk, eggs} ---> {coke, milk}    KO
+       { } ---> {beer}                   OK
+
+
+Estamos buscando asociacion, no casuales
+
+### Hay que medir que reglas de asociacion es mas relevante
+
+
+## Confianza y Soporte
+
+- Itemset : Es la coleccion de uno o mas item
+- Soporte : Es la frecuencia con la que ocurre un itemset
+- Regla de asociacion : Es una relacion entre 2 itemset
+                                  X --> Y
+
+Como evaluar una regla de asociacion:
+
+### Medicion de soporte
+  $ s(X->Y) = s(X\cupY) = \frac{# de tx. que contiene a (X\cupY)}{# total de tx.} $
+
+Ejemplo:
+
+   
+   $R_1$ : {bread, milk}  --> {diaper}
+% l
+    $ S(R_1) = \frac{2}{5} $ 
+
+
+intercepcion : que los 2 eventos sucedan
+union : que al menos uno este 
+
+### Medicion de confianza
+
+R1 : {bread, milk} --> {diaper}
+
+
+S(R1) = 2/5 = 40%
+
+Para las personas que comprarn leche , pan y pañales , son el 40% del total
+
+
+C(R1) = 2/3 = 67%
+
+Para las personas que compran leche y pan , en su canasta de compra el 66.7 % llevan panales
+
+
+
+
+# Lift :
+
+El soporte de la union entre el producto de los item antecedentes y consecuentes.
+
+La union es una intercepcion
+Si el lift es 1 , que la probabilidad de la intercepction sea igual a la fecuencia del producto de cada uno de ellos , es DECIR QUE SON INDEPENCIA
+
+Cuantifica el grado de asociacion entre item que sean antecedentes y consecuentes
+Si el lift es 1, las reglas de asociacion no sirven
+Si el lift > 1 , existe una mayor asociacion , por lo tanto las reglas tiene mayor relevancia
+Si el 0<lift<1, existe una relacion inversa, cuando compro el uno (sea antecedente o consecuente), compro menos del otro, estos item no estan asociados, son item sustitutos. EJemplo : Cafe con el Te
+
+$ lift(X =>Y) = \frac{supp(X \cup Y)}{supp(X)*supp(Y) }$
+
+## Algoritmo Apriori
+
+Si tenemos un conjunto A, B y C , se podria construir las siguiente reglas:
+
+A -> B
+A -> C
+B -> C
+C -> A
+C -> B
+B -> A
+{A,B} -> C
+{A,C} -> B
+{B,C} -> A
+
+Dado un conjunto de datos, el objetivo es encontrar todas las reglas de asociacion que cumplan:
+- Soporte >= minimo soporte
+- Confianza >= minimo confianza
+
+Si le doy un soporte y confianza muy baja, voy a generar muchas reglas de asociacion
+
+Si le doy un soporte y confianza muy alta, voy a generar pocas reglas de asociacion
+
+Para asignarle valores iniciales debe guiarte por la REGLA DE NEGOCIOS
+
+Debe saber de acuerdo al contexto que item es frecuente
+
+
+Algoritmo:
+----------
+
+Si tengo un itemsets poco frecuentes ya no se construye reglas de asociacion.
+
+Si tengo un itemsets mas frecuentes  se debe construir las reglas de asociacion.
+
+1.- Generamos itemsets que sean mas frecuentes, descartamos los pocos frecuentes
+2.- Generamos reglas de asociacion con los itemsets del paso 1
+3.- Generamos la confianza para los items del paso 2
+4.- Eliminamos los itemsets para las confianzas que sean mayores a la confianza minima definida
+
+
+
+
+   
+   
