@@ -89,6 +89,16 @@ h1<-hist(credit$DEUDA_TOTAL, xlab="Deudas Total",
          main = "Distribución de Deudas Total")
 
 
+# MONTO APROBADO
+tabla <- (table.freq(hist(credit$MONTO_APROBADO,plot=FALSE)))  # "Sturges"
+tabla
+h1<-hist(credit$MONTO_APROBADO, xlab="Deudas Total",
+         ylab="Número de empresas", 
+         main = "Distribución de Monto aprobado")
+
+
+
+
 #############################################
 ##  N.- FIN DE PRACTICA 03
 #############################################
