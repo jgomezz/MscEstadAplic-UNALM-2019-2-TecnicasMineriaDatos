@@ -52,6 +52,7 @@ summary(credit)
 library(agricolae)
 
 # FLG_MIGRA : Indica si una empresa ha sido declarado en Default
+
 ni    <- table(credit$FLG_MIGRA)
 pi    <- round(prop.table(table(credit$FLG_MIGRA))*100,1)
 tabla <- rbind(ni,pi)
@@ -59,42 +60,113 @@ tabla
 barplot(pi, main="Distribución de Empresas en Default", 
         col="blue",xlab="Default",ylab="Porcentaje")
 
-# SEGMENTO_CONSTRUCCION
-ni    <- table(credit$SEGMENTO_CONSTRUCCION)
-pi    <- round(prop.table(table(credit$SEGMENTO_CONSTRUCCION))*100,1)
-tabla <- rbind(ni,pi)
-tabla
-barplot(pi, main="Distribución de Empresas por segmento", 
-        col="blue",xlab="Default",ylab="Porcentaje")
+# VENTAS : Nivel de Ventas mensuales realizadas por la 
+#          empresa al momento de la evaluación crediticia. 
+#          (Unidad: Soles Peruanos)
 
-# VENTAS
 tabla <- (table.freq(hist(credit$VENTAS,plot=FALSE)))  # "Sturges"
 tabla
 h1<-hist(credit$VENTAS, xlab="Ventas",
          ylab="Número de empresas", 
          main = "Distribución de Ventas")
 
-# PASIVOS
+# PASIVOS : Nivel de pasivos que posee la empresa al momento de la 
+#           evaluación crediticia. (Unidad: Soles Peruanos).
+
 tabla <- (table.freq(hist(credit$PASIVOS,plot=FALSE)))  # "Sturges"
 tabla
 h1<-hist(credit$PASIVOS, xlab="Pasivos",
          ylab="Número de empresas", 
          main = "Distribución de Pasivos")
 
-# DEUDA TOTAL
+# DEUDA TOTAL : Deuda que posee la empresa al momento de la 
+#               evaluación crediticia. (Unidad: Soles Peruanos).
+
 tabla <- (table.freq(hist(credit$DEUDA_TOTAL,plot=FALSE)))  # "Sturges"
 tabla
 h1<-hist(credit$DEUDA_TOTAL, xlab="Deudas Total",
          ylab="Número de empresas", 
          main = "Distribución de Deudas Total")
 
+# MONTO APROBADO : Monto de desembolso de la empresa 
+#                  (Unidad: Soles Peruanos).
 
-# MONTO APROBADO
 tabla <- (table.freq(hist(credit$MONTO_APROBADO,plot=FALSE)))  # "Sturges"
 tabla
 h1<-hist(credit$MONTO_APROBADO, xlab="Deudas Total",
          ylab="Número de empresas", 
          main = "Distribución de Monto aprobado")
+
+# SEGMENTO_CONSTRUCCION : Nivel de información que se posee del cliente 
+#                         al momento de la evaluación.
+#
+#    1 --> Sin Información
+#    2 --> Con Poca Información
+#    3 --> Información Regular 1
+#    4 --> Información Regular 2
+#    5 --> Cliente con información Completa 1
+#    6 --> Cliente con información Completa 2
+
+ni    <- table(credit$SEGMENTO_CONSTRUCCION)
+pi    <- round(prop.table(table(credit$SEGMENTO_CONSTRUCCION))*100,1)
+tabla <- rbind(ni,pi)
+tabla
+barplot(pi, main="Nivel de información del Cliente", 
+        col="blue",xlab="Información",ylab="Porcentaje")
+
+
+# FAD_1 : Flujo antes de Deuda que posee la empresa al momento 
+#         de la evaluación crediticia.
+#
+#  999 -->   Missing
+#    1 --> [ 0k-20k]
+#    2 --> [20k-30k]
+#    3 --> [30k-40k]
+#    4 --> [40k-60k]
+#    5 --> [60k-Más]
+
+ni    <- table(credit$FAD_1)
+pi    <- round(prop.table(table(credit$FAD_1))*100,1)
+tabla <- rbind(ni,pi)
+tabla
+barplot(pi, main="Flujo antes de la Deuda", 
+        col="blue",xlab="Flujo",ylab="Porcentaje")
+
+
+# DELTA_DE_ENTIDADES_1 : Variación de entidades en los 6 últimos meses 
+#                        de la empresa al momento de la evaluación crediticia.
+#
+#   -2 --> <= -2
+#   -1 --> -1
+#    0 --> 0
+#    1 --> 1
+#    2 --> >=2
+
+ni    <- table(credit$DELTA_DE_ENTIDADES_1)
+pi    <- round(prop.table(table(credit$DELTA_DE_ENTIDADES_1))*100,1)
+tabla <- rbind(ni,pi)
+tabla
+barplot(pi, main="Variación de entidades en los 6 últimos meses", 
+        col="blue",xlab="Variación",ylab="Porcentaje")
+
+# RANGO_DE_PD : Rangos de nivel de probabilidad de hacer default 
+#               al momento de la admisión.
+#
+#    1 --> <= 2.0%
+#    2 --> <2.0%-4.0%]
+#    3 --> <4.0%-6.0%]
+#    4 --> <6.0%-8.0%]
+#    5 --> <8.0%-12.0%]
+#    6 --> <12.0%-Más]
+
+ni    <- table(credit$RANGO_DE_PD)
+pi    <- round(prop.table(table(credit$RANGO_DE_PD))*100,1)
+tabla <- rbind(ni,pi)
+tabla
+barplot(pi, main="Rangos de nivel de probabilidad de hacer default", 
+        col="blue",xlab="Probabilidad",ylab="Porcentaje")
+
+
 
 
 #############################################
