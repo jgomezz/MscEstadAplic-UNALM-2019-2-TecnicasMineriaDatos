@@ -90,6 +90,14 @@ h1<-hist(credit$DEUDA_TOTAL, xlab="Deudas Total",
 
 # MONTO APROBADO : Monto de desembolso de la empresa 
 #                  (Unidad: Soles Peruanos).
+#
+#    1 --> <= 12k
+#    2 --> <= 30k
+#    3 --> <= 90k
+#    4 --> <= 300k
+#    5 --> <= 750k
+#    6 --> <= 1.2M
+#    7 --> >= 1.2M
 
 tabla <- (table.freq(hist(credit$MONTO_APROBADO,plot=FALSE)))  # "Sturges"
 tabla
@@ -166,7 +174,95 @@ tabla
 barplot(pi, main="Rangos de nivel de probabilidad de hacer default", 
         col="blue",xlab="Probabilidad",ylab="Porcentaje")
 
+######################################################
+# Exploratorio Bivariado (con respecto a variable dicotomica)
 
+# FLG_MIGRA vs VENTAS
+boxplot(credit$VENTAS ~ credit$FLG_MIGRA,
+        xlab="Default",ylab="Ventas",
+        main="Ventas por Cliente")
+aggregate(credit$VENTAS ~credit$FLG_MIGRA, FUN=mean)
+
+
+# FLG_MIGRA vs PASIVOS
+boxplot(credit$PASIVOS ~ credit$FLG_MIGRA,
+        xlab="Default",ylab="Ventas",
+        main="Pasivos  por Cliente")
+aggregate(credit$PASIVOS ~credit$FLG_MIGRA, FUN=mean)
+
+# FLG_MIGRA vs DEUDA_TOTAL
+boxplot(credit$DEUDA_TOTAL ~ credit$FLG_MIGRA,
+        xlab="Default",ylab="Ventas",
+        main="Deuda total por Cliente")
+aggregate(credit$DEUDA_TOTAL ~credit$FLG_MIGRA, FUN=mean)
+
+# FLG_MIGRA vs MONTO_APROBADO
+table(credit$MONTO_APROBADO,credit$FLG_MIGRA)
+prop.table(table(credit$MONTO_APROBADO,credit$FLG_MIGRA),margin=1)
+counts <- table(credit$MONTO_APROBADO,credit$FLG_MIGRA)
+counts
+barplot(counts, main="Distribución de empresa según monto aprobado",
+        ylab ="Nro. de Empresas",
+        xlab="Default", col=c("blue","red", "green","yellow","orange"),
+        legend = rownames(counts), beside=TRUE)
+
+# FLG_MIGRA vs SEGMENTO_CONSTRUCCION
+table(credit$SEGMENTO_CONSTRUCCION,credit$FLG_MIGRA)
+prop.table(table(credit$SEGMENTO_CONSTRUCCION,credit$FLG_MIGRA),margin=1)
+counts <- table(credit$SEGMENTO_CONSTRUCCION,credit$FLG_MIGRA)
+counts
+barplot(counts, main="Distribución de empresa según segmento de construcción",
+        ylab ="Nro. de Empresas",
+        xlab="Deafult", col=c("blue","red", "green","yellow","orange","purple"),
+        legend = rownames(counts), beside=TRUE)
+
+# FLG_MIGRA vs FAD_1
+table(credit$FAD_1,credit$FLG_MIGRA)
+prop.table(table(credit$FAD_1,credit$FLG_MIGRA),margin=1)
+counts <- table(credit$FAD_1,credit$FLG_MIGRA)
+counts
+barplot(counts, main="Distribución de flujos antes de deuda por empresa",
+        ylab ="Nro. de Empresas",
+        xlab="Default", col=c("blue","red", "green","yellow","orange"),
+        legend = rownames(counts), beside=TRUE)
+
+# FLG_MIGRA vs DELTA_DE_ENTIDADES_1
+table(credit$DELTA_DE_ENTIDADES_1,credit$FLG_MIGRA)
+prop.table(table(credit$DELTA_DE_ENTIDADES_1,credit$FLG_MIGRA),margin=1)
+counts <- table(credit$DELTA_DE_ENTIDADES_1,credit$FLG_MIGRA)
+counts
+barplot(counts, main="Variación de Entidad en los últimos 6 meses",
+        ylab ="Nro. de Empresas",
+        xlab="Default", col=c("blue","red", "green","yellow","orange"),
+        legend = rownames(counts), beside=TRUE)
+
+# FLG_MIGRA vs RANGO_DE_PD
+table(credit$RANGO_DE_PD,credit$FLG_MIGRA)
+prop.table(table(credit$RANGO_DE_PD,credit$FLG_MIGRA),margin=1)
+counts <- table(credit$RANGO_DE_PD,credit$FLG_MIGRA)
+counts
+barplot(counts, main="Nivel de probabilidad de hacer default",
+        ylab ="Nro. de Empresas",
+        xlab="Default", col=c("blue","red", "green","yellow"),
+        legend = rownames(counts), beside=TRUE)
+
+#############################################
+##  3.-  Exploracion de datos
+#############################################
+
+library(fBasics)
+
+names(credit)
+
+basicStats(credit$MONTO_APROBADO)
+basicStats(credit$DELTA_DE_ENTIDADES_1)
+basicStats(credit$RANGO_DE_PD)
+basicStats(credit$FAD_1)
+basicStats(credit$SEGMENTO_CONSTRUCCION)
+
+basicStats(credit$VENTAS)
+basicStats(credit$DEUDA_TOTAL)
+basicStats(credit$PASIVOS)
 
 
 #############################################
