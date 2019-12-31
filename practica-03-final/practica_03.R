@@ -97,8 +97,6 @@ h1<-hist(credit$MONTO_APROBADO, xlab="Deudas Total",
          main = "Distribución de Monto aprobado")
 
 
-
-
 #############################################
 ##  N.- FIN DE PRACTICA 03
 #############################################
